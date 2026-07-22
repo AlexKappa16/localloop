@@ -17,20 +17,24 @@ export function AppShell({ children, title, workspaceSwitch }: AppShellProps) {
   return (
     <div className="app-shell">
       <header className="app-shell__header">
-        <Link to="/" className="app-shell__brand">
-          {en.brand}
-        </Link>
-        <div className="app-shell__meta">
+        <div className="app-shell__top">
+          <Link to="/" className="app-shell__brand">
+            {en.brand}
+          </Link>
+          <div className="app-shell__tools">
+            <span className="app-shell__revision mono muted">
+              {en.revisionLabel} {status === 'ready' ? state.revision : '—'}
+            </span>
+            <DemoResetButton />
+          </div>
+        </div>
+        <div className="app-shell__nav">
           <DemoPersonaSwitcher />
           {workspaceSwitch}
-          <span className="mono muted">
-            {en.revisionLabel}: {status === 'ready' ? state.revision : '—'}
-          </span>
-          <DemoResetButton />
         </div>
       </header>
       <main className="app-shell__main">
-        {title ? <h1>{title}</h1> : null}
+        {title ? <p className="app-shell__context muted">{title}</p> : null}
         {children}
       </main>
     </div>

@@ -5,6 +5,32 @@ nearby host businesses unlock customer rewards, and verified redemption triggers
 a host payout on Solana **devnet** — without moving funds from the connected
 advertiser wallet.
 
+## Demo disclaimer (please read)
+
+The **working Solana MVP** (`/`, `/customer`, `/advertiser`, `/host`) depends on:
+
+1. A browser with the **Phantom** wallet extension installed and unlocked
+2. A reachable **backend** (local `npm run dev` / `npm start`, or a tunnelled API)
+
+Those live routes are easy to miss in a quick judge pass: without Phantom + API
+they will not complete the wallet / funding / payout path.
+
+**For judging in the browser, use the mocked walkthrough:**
+
+```text
+/demo-preview
+```
+
+`/demo-preview` is a self-contained frontend prototype of the full Magnolia →
+Camora → Nino story. It does not need Phantom or the API.
+
+**In our demo video we show both:**
+
+1. The **working MVP** on our device (Phantom + backend) — real `signMessage`
+   authorization and server-funded Solana **devnet** receipts
+2. The **mocked** `/demo-preview` flow — same product story for anyone opening
+   the deployed frontend without our local stack
+
 ## Quick start (app without Solana secrets)
 
 ```bash

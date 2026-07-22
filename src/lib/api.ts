@@ -102,6 +102,15 @@ export async function requestClaimRedemption(
   return parseJson(res);
 }
 
+export async function declineClaimRedemption(
+  claimId: string,
+): Promise<MutationResponse<{ claimId: string; declined: true }>> {
+  const res = await fetch(`/api/claims/${claimId}/decline`, {
+    method: 'POST',
+  });
+  return parseJson(res);
+}
+
 export async function validateClaim(
   claimId: string,
 ): Promise<

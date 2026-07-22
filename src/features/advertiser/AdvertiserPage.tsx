@@ -1,28 +1,77 @@
-import { StatusBadge } from '../../components/StatusBadge';
-import { TransactionReceipt } from '../../components/TransactionReceipt';
+import { useMemo, useState } from 'react';
+import { StepWizard } from '../../components/StepWizard';
 import { FundingAuthorizationPanel } from '../../components/FundingAuthorizationPanel';
+import { TransactionReceipt } from '../../components/TransactionReceipt';
+import { StatusBadge } from '../../components/StatusBadge';
 import { useDemoState } from '../../app/DemoStateProvider';
 import { en } from '../../copy/en';
 import { ids } from '../../../shared/ids';
-import { useState } from 'react';
 import { ApiClientError } from '../../lib/api';
 
 type Props = { businessId: string };
 
+type AdvStep = 1 | 2 | 3 | 4 | 5;
+
+function deriveStep(options: {
+  campaignStatus: string;
+  dealStatus: string | undefined;
+  claimStatus: string | undefined;
+  payoutStatus: string | undefined;
+  localPastIntro: boolean;
+}): AdvStep {
+  const { campaignStatus, dealStatus, claimStatus, payoutStatus, localPastIntro } =
+    options;
+
+  if (claimStatus === 'declined') return 5;
+  if (payoutStatus === 'paid' || payoutStatus === 'failed') return 5;
+  if (claimStatus === 'redemption_requested' || claimStatus === 'redeemed') {
+    return 4;
+  }
+  if (dealStatus === 'active' || campaignStatus === 'live') return 4;
+  if (
+    campaignStatus === 'simulated_funded' ||
+    campaignStatus === 'live' ||
+    campaignStatus === 'completed'
+  ) {
+    return 3;
+  }
+  if (localPastIntro || campaignStatus !== 'draft') return 2;
+  return 1;
+}
+
 export function AdvertiserPage({ businessId }: Props) {
   const { state, validateClaimMutation } = useDemoState();
-  const [actionError, setActionError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [localPastIntro, setLocalPastIntro] = useState(false);
 
   const business = state.businesses.find((item) => item.id === businessId);
   const campaign = state.campaigns.find(
     (item) => item.advertiserBusinessId === businessId,
   );
-  const deals = state.deals.filter((d) => d.campaignId === campaign?.id);
+  const camoraDeal = state.deals.find((d) => d.id === ids.camoraDeal);
   const claim = state.claims.find((c) => c.campaignId === campaign?.id);
   const payout = state.payouts.find((p) => p.claimId === claim?.id);
   const fundingTx = state.transactions.find((tx) => tx.type === 'funding_proof');
   const payoutTx = state.transactions.find((tx) => tx.type === 'host_payout');
+
+  const step = useMemo(
+    () =>
+      deriveStep({
+        campaignStatus: campaign?.status ?? 'draft',
+        dealStatus: camoraDeal?.status,
+        claimStatus: claim?.status,
+        payoutStatus: payout?.status,
+        localPastIntro,
+      }),
+    [
+      campaign?.status,
+      camoraDeal?.status,
+      claim?.status,
+      payout?.status,
+      localPastIntro,
+    ],
+  );
 
   if (!campaign) {
     return (
@@ -34,22 +83,14 @@ export function AdvertiserPage({ businessId }: Props) {
     );
   }
 
-  const funded =
-    campaign.status === 'simulated_funded' ||
-    campaign.status === 'live' ||
-    campaign.status === 'completed';
-
-  const canValidate = claim?.status === 'redemption_requested';
-  const canRetryPayout = payout?.status === 'failed';
-
   async function onValidate() {
     if (!claim) return;
     setBusy(true);
-    setActionError(null);
+    setError(null);
     try {
       await validateClaimMutation(claim.id);
     } catch (err) {
-      setActionError(
+      setError(
         err instanceof ApiClientError
           ? err.code === 'SOLANA_NOT_READY'
             ? en.solanaNotReady
@@ -61,105 +102,126 @@ export function AdvertiserPage({ businessId }: Props) {
     }
   }
 
-  return (
-    <div className="stack">
-      <div className="panel stack">
-        <h2>{business?.name ?? en.personaMagnolia}</h2>
-        <p className="muted">{en.workspaceAdvertiser}</p>
-        <h3>{campaign.name}</h3>
-        <StatusBadge kind="campaign" status={campaign.status} />
-        <p className="mono muted">{campaign.id}</p>
+  const w = en.wizard.advertiser;
 
-        <div className="budget-grid">
-          <div>
-            <span className="muted">{en.budgetTotal}</span>
-            <strong>{campaign.budget.totalSol} SOL</strong>
-          </div>
-          <div>
-            <span className="muted">{en.budgetReserved}</span>
-            <strong>{campaign.budget.reservedSol} SOL</strong>
-          </div>
-          <div>
-            <span className="muted">{en.budgetPaid}</span>
-            <strong>{campaign.budget.paidSol} SOL</strong>
-          </div>
-          <div>
-            <span className="muted">{en.budgetRemaining}</span>
-            <strong>{campaign.budget.remainingSol} SOL</strong>
-          </div>
-        </div>
-        <p>
-          {en.fundingLabel}: {campaign.budget.label}
+  if (step === 1) {
+    return (
+      <StepWizard
+        step={1}
+        total={5}
+        stepTitle={w.campaignTitle}
+        headline={w.campaignHeadline}
+        body={w.campaignBody}
+        badge={<StatusBadge kind="campaign" status={campaign.status} />}
+        primaryLabel={en.continue}
+        onPrimary={() => setLocalPastIntro(true)}
+      >
+        <p className="mono">
+          {en.fundingLabel}: {campaign.budget.totalSol} SOL
         </p>
-      </div>
+        <p className="muted">{business?.name}</p>
+      </StepWizard>
+    );
+  }
 
-      {!funded ? (
+  if (step === 2) {
+    return (
+      <StepWizard
+        step={2}
+        total={5}
+        stepTitle={w.fundTitle}
+        headline={w.fundHeadline}
+        body={w.fundBody}
+      >
         <FundingAuthorizationPanel campaignId={campaign.id} />
-      ) : (
-        <div className="panel stack">
-          <p className="success">{en.fundingSuccess}</p>
-          <TransactionReceipt transaction={fundingTx} />
-        </div>
-      )}
+      </StepWizard>
+    );
+  }
 
-      <div className="panel stack">
-        <h3>{en.partnerDeals}</h3>
-        {deals.map((deal) => (
-          <div key={deal.id} className="deal-card stack">
-            <div className="switcher">
-              <strong>
-                {
-                  state.businesses.find((b) => b.id === deal.hostBusinessId)
-                    ?.name
-                }
-              </strong>
-              <StatusBadge kind="deal" status={deal.status} />
-              <span className="muted">
-                {deal.mocked ? en.mockedDeal : en.workingDeal}
-              </span>
-            </div>
-            <p>{deal.requirement}</p>
-            <p>
-              {en.rewardTerms}: {deal.reward}
-            </p>
-            <p className="mono">
-              Payout {deal.payoutSol} SOL · max {deal.maxRedemptions}
-            </p>
-          </div>
-        ))}
-      </div>
+  if (step === 3) {
+    return (
+      <StepWizard
+        step={3}
+        total={5}
+        stepTitle={w.hostsTitle}
+        headline={w.hostsHeadline}
+        body={w.hostsBody}
+        badge={
+          camoraDeal ? (
+            <StatusBadge kind="deal" status={camoraDeal.status} />
+          ) : null
+        }
+        waiting={
+          camoraDeal?.status !== 'active' ? en.waitingOnApproval : null
+        }
+      >
+        <p>
+          Camora · {camoraDeal?.requirement} · {camoraDeal?.payoutSol} SOL
+        </p>
+        <p className="muted">TSRE Gym — proposed mock partner (not in live path)</p>
+        {fundingTx ? <TransactionReceipt transaction={fundingTx} /> : null}
+      </StepWizard>
+    );
+  }
 
-      <div className="panel stack">
-        <h3>{en.incomingRedemption}</h3>
+  if (step === 4) {
+    const canValidate =
+      claim?.status === 'redemption_requested' || payout?.status === 'failed';
+
+    return (
+      <StepWizard
+        step={4}
+        total={5}
+        stepTitle={w.redemptionTitle}
+        headline={
+          canValidate ? w.redemptionHeadline : w.redemptionWaitingHeadline
+        }
+        body={canValidate ? w.redemptionBody : w.redemptionWaitingBody}
+        badge={
+          claim ? <StatusBadge kind="claim" status={claim.status} /> : null
+        }
+        waiting={canValidate ? null : en.waitingOnRedemption}
+        primaryLabel={
+          canValidate
+            ? payout?.status === 'failed'
+              ? en.retryPayout
+              : en.validateRedemption
+            : undefined
+        }
+        onPrimary={canValidate ? () => void onValidate() : undefined}
+        primaryBusy={busy}
+        error={error}
+      >
         {claim ? (
-          <>
-            <p className="mono">
-              {en.claimId}: {claim.id}
-            </p>
-            <StatusBadge kind="claim" status={claim.status} />
-            {payout ? (
-              <StatusBadge kind="payout" status={payout.status} />
-            ) : null}
-            {(canValidate || canRetryPayout) && (
-              <button
-                type="button"
-                className="btn btn--primary"
-                disabled={busy}
-                onClick={() => void onValidate()}
-              >
-                {canRetryPayout ? en.retryPayout : en.validateRedemption}
-              </button>
-            )}
-            {!canValidate && !canRetryPayout ? (
-              <p className="muted">{en.noRedemption}</p>
-            ) : null}
-            {actionError ? <p className="error">{actionError}</p> : null}
-            <TransactionReceipt transaction={payoutTx} />
-          </>
-        ) : (
-          <p className="muted">{en.noRedemption}</p>
-        )}
-      </div>
-    </div>
+          <p className="mono">
+            {en.claimId}: {claim.id}
+          </p>
+        ) : null}
+      </StepWizard>
+    );
+  }
+
+  // step 5
+  const declined = claim?.status === 'declined';
+  return (
+    <StepWizard
+      step={5}
+      total={5}
+      stepTitle={w.settleTitle}
+      headline={
+        declined ? w.settleDeclinedHeadline : w.settlePaidHeadline
+      }
+      body={declined ? w.settleDeclinedBody : w.settlePaidBody}
+      badge={
+        payout ? <StatusBadge kind="payout" status={payout.status} /> : null
+      }
+      success={
+        declined
+          ? en.budgetUnchanged
+          : `${en.budgetRemaining}: ${campaign.budget.remainingSol} SOL`
+      }
+    >
+      {!declined ? <TransactionReceipt transaction={payoutTx} /> : null}
+    </StepWizard>
   );
 }

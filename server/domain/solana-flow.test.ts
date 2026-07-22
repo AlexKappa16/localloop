@@ -30,6 +30,7 @@ import {
   approveDeal,
   beginValidation,
   completeHostPayout,
+  declineRedemption,
   requestRedemption,
   verifyVisit,
 } from '../domain/transitions';
@@ -252,6 +253,27 @@ describe('domain transitions', () => {
     assert.equal(state.claims[0]?.status, 'locked');
     assert.equal(state.transactions.length, 0);
     assert.equal(state.campaigns[0]?.budget.remainingSol, 0.05);
+  });
+
+  it('decline blocks redemption and validation without changing budget', () => {
+    applyFundingProofConfirmed(fundingTx());
+    approveDeal(ids.camoraDeal);
+    verifyVisit(ids.camoraDeal, ids.nino);
+    verifyVisit(ids.camoraDeal, ids.nino);
+    let state = declineRedemption(ids.claim);
+    assert.equal(state.claims[0]?.status, 'declined');
+    assert.equal(state.payouts[0]?.status, 'not_ready');
+    assert.equal(state.campaigns[0]?.budget.remainingSol, 0.05);
+    assert.equal(state.transactions.length, 1); // funding only
+
+    assert.throws(
+      () => requestRedemption(ids.claim),
+      (err: unknown) => err instanceof AppError && err.code === 'CLAIM_DECLINED',
+    );
+    assert.throws(
+      () => beginValidation(ids.claim),
+      (err: unknown) => err instanceof AppError && err.code === 'CLAIM_DECLINED',
+    );
   });
 });
 

@@ -14,20 +14,30 @@ export function BusinessWorkspaceSwitcher({ businessId, capabilities }: Props) {
   if (!canAdvertiser && !canHost) return null;
 
   return (
-    <div className="switcher" aria-label={en.businessWorkspace}>
-      {canAdvertiser ? (
-        <NavLink
-          to={`/business/${businessId}/advertiser`}
-          className="btn switcher__btn"
-        >
-          {en.workspaceAdvertiser}
-        </NavLink>
-      ) : null}
-      {canHost ? (
-        <NavLink to={`/business/${businessId}/host`} className="btn switcher__btn">
-          {en.workspaceHost}
-        </NavLink>
-      ) : null}
+    <div className="seg" role="navigation" aria-label={en.businessWorkspace}>
+      <span className="seg__label">{en.businessWorkspace}</span>
+      <div className="seg__group">
+        {canAdvertiser ? (
+          <NavLink
+            to={`/business/${businessId}/advertiser`}
+            className={({ isActive }) =>
+              `seg__item${isActive ? ' seg__item--active' : ''}`
+            }
+          >
+            Advertiser
+          </NavLink>
+        ) : null}
+        {canHost ? (
+          <NavLink
+            to={`/business/${businessId}/host`}
+            className={({ isActive }) =>
+              `seg__item${isActive ? ' seg__item--active' : ''}`
+            }
+          >
+            Host
+          </NavLink>
+        ) : null}
+      </div>
     </div>
   );
 }

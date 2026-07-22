@@ -196,6 +196,13 @@ export function requestRedemption(claimId: string): DemoState {
     if (claim.status === 'redemption_requested' || claim.status === 'redeemed') {
       return;
     }
+    if (claim.status === 'declined') {
+      throw new AppError({
+        code: 'CLAIM_DECLINED',
+        message: 'This reward was declined and cannot be redeemed.',
+        status: 409,
+      });
+    }
     if (claim.status !== 'unlocked') {
       throw new AppError({
         code: 'CLAIM_NOT_UNLOCKED',
@@ -209,6 +216,31 @@ export function requestRedemption(claimId: string): DemoState {
     if (payout && payout.status === 'not_ready') {
       payout.status = 'pending';
     }
+  });
+}
+
+export function declineRedemption(claimId: string): DemoState {
+  return mutateState((draft) => {
+    const claim = draft.claims.find((c) => c.id === claimId);
+    if (!claim) {
+      throw new AppError({
+        code: 'CLAIM_NOT_FOUND',
+        message: 'Claim not found.',
+        status: 404,
+      });
+    }
+    if (claim.status === 'declined') {
+      return;
+    }
+    if (claim.status !== 'unlocked') {
+      throw new AppError({
+        code: 'CLAIM_NOT_UNLOCKED',
+        message: 'Only an unlocked reward can be declined.',
+        status: 409,
+      });
+    }
+    claim.status = 'declined';
+    // Payout stays not_ready — no Solana activity
   });
 }
 
@@ -245,6 +277,14 @@ export function beginValidation(claimId: string): {
       (t) => t.type === 'host_payout' && t.claimId === claimId,
     );
     return { state: current, alreadyPaid: true, existingTx };
+  }
+
+  if (claim.status === 'declined') {
+    throw new AppError({
+      code: 'CLAIM_DECLINED',
+      message: 'Declined rewards cannot be validated.',
+      status: 409,
+    });
   }
 
   if (claim.status !== 'redemption_requested' && claim.status !== 'redeemed') {

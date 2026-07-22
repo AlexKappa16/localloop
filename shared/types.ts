@@ -4,7 +4,12 @@ export type BusinessCapability = 'advertiser' | 'host';
 
 export type CampaignStatus = 'draft' | 'simulated_funded' | 'live' | 'completed';
 export type DealStatus = 'proposed' | 'active' | 'completed';
-export type ClaimStatus = 'locked' | 'unlocked' | 'redemption_requested' | 'redeemed';
+export type ClaimStatus =
+  | 'locked'
+  | 'unlocked'
+  | 'redemption_requested'
+  | 'redeemed'
+  | 'declined';
 export type PayoutStatus = 'not_ready' | 'pending' | 'processing' | 'paid' | 'failed';
 export type TransactionType = 'funding_proof' | 'host_payout';
 export type TransactionConfirmation = 'pending' | 'confirmed' | 'failed';

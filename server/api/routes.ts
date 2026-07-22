@@ -17,6 +17,7 @@ import {
   completeHostPayout,
   failHostPayout,
   requestRedemption,
+  declineRedemption,
   verifyVisit,
 } from '../domain/transitions';
 import { getHealthSolanaFields, isSolanaReady } from '../solana/client';
@@ -293,6 +294,20 @@ export function createApiRouter(): Router {
       const body: MutationResponse<{ claimId: string }> = {
         revision: state.revision,
         data: { claimId: req.params.claimId },
+        state,
+      };
+      res.json(body);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  router.post('/claims/:claimId/decline', (req, res, next) => {
+    try {
+      const state = declineRedemption(req.params.claimId);
+      const body: MutationResponse<{ claimId: string; declined: true }> = {
+        revision: state.revision,
+        data: { claimId: req.params.claimId, declined: true },
         state,
       };
       res.json(body);

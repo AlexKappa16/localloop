@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { WalletReadyState } from '@solana/wallet-adapter-base';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useWalletModal } from '@solana/wallet-adapter-react-ui';
 import { useDemoState } from '../app/DemoStateProvider';
@@ -24,10 +25,31 @@ type Phase =
   | 'success'
   | 'error';
 
+const WALLET_CONNECT_TIMEOUT_MS = 15_000;
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeout = window.setTimeout(
+      () => reject(new Error(en.walletConnectionTimedOut)),
+      timeoutMs,
+    );
+    promise.then(
+      (value) => {
+        window.clearTimeout(timeout);
+        resolve(value);
+      },
+      (error: unknown) => {
+        window.clearTimeout(timeout);
+        reject(error);
+      },
+    );
+  });
+}
+
 function statusLabel(phase: Phase): string | null {
   switch (phase) {
     case 'connecting':
-      return 'Waiting for wallet connection…';
+      return 'Waiting for Phantom connection…';
     case 'challenging':
       return 'Requesting funding challenge from server…';
     case 'awaiting_signature':
@@ -42,16 +64,24 @@ function statusLabel(phase: Phase): string | null {
 }
 
 export function FundingAuthorizationPanel({ campaignId, disabled }: Props) {
-  const { publicKey, connected, connecting, disconnect, signMessage } =
-    useWallet();
-  const { setVisible } = useWalletModal();
+  const {
+    publicKey,
+    connected,
+    connecting,
+    connect,
+    disconnect,
+    select,
+    signMessage,
+    wallet,
+  } = useWallet();
+  const { setVisible, visible } = useWalletModal();
   const { authorizeFundingMutation, state } = useDemoState();
-
   const [phase, setPhase] = useState<Phase>('idle');
   const [challengeMessage, setChallengeMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const pendingFundRef = useRef(false);
   const inFlightRef = useRef(false);
+  const awaitingWalletChoiceRef = useRef(false);
+  const connectInFlightRef = useRef(false);
 
   const address = publicKey?.toBase58() ?? null;
   const canSign = walletSupportsSignMessage({ signMessage });
@@ -60,31 +90,109 @@ export function FundingAuthorizationPanel({ campaignId, disabled }: Props) {
     campaign?.status === 'simulated_funded' ||
     campaign?.status === 'live' ||
     campaign?.status === 'completed';
+  const fundingTx = state.transactions.find((tx) => tx.type === 'funding_proof');
+
+  const connectSelectedWallet = useCallback(async () => {
+    if (!wallet || connectInFlightRef.current) return;
+
+    connectInFlightRef.current = true;
+    setError(null);
+    setPhase('connecting');
+
+    try {
+      if (wallet.adapter.readyState !== WalletReadyState.Installed) {
+        throw new Error(en.phantomNotDetected);
+      }
+
+      await withTimeout(connect(), WALLET_CONNECT_TIMEOUT_MS);
+      setPhase('idle');
+    } catch (err) {
+      setPhase('error');
+      const msg = err instanceof Error ? err.message.toLowerCase() : '';
+      if (msg.includes('user rejected') || msg.includes('rejected') || msg.includes('cancel')) {
+        setError('Connection was rejected in Phantom. Try again.');
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(en.errorGeneric);
+      }
+      try {
+        select(null);
+      } catch {
+        // ignore
+      }
+    } finally {
+      connectInFlightRef.current = false;
+      awaitingWalletChoiceRef.current = false;
+    }
+  }, [connect, select, wallet]);
+
+  const connectWallet = useCallback(async () => {
+    setError(null);
+
+    // Always start from a clean adapter session after reset / prior connect.
+    if (connected) {
+      await disconnect();
+    }
+    if (wallet) {
+      select(null);
+    }
+
+    awaitingWalletChoiceRef.current = true;
+    setPhase('connecting');
+    setVisible(true);
+  }, [connected, disconnect, select, setVisible, wallet]);
+
+  // After the modal selects Phantom, actually open the approval prompt.
+  useEffect(() => {
+    if (
+      !awaitingWalletChoiceRef.current ||
+      !wallet ||
+      connected ||
+      connecting ||
+      connectInFlightRef.current
+    ) {
+      return;
+    }
+    void connectSelectedWallet();
+  }, [connectSelectedWallet, connected, connecting, wallet]);
+
+  // If the user closes the wallet modal without choosing, unlock the UI.
+  useEffect(() => {
+    if (
+      !visible &&
+      awaitingWalletChoiceRef.current &&
+      !wallet &&
+      !connected &&
+      !connectInFlightRef.current
+    ) {
+      awaitingWalletChoiceRef.current = false;
+      setPhase('idle');
+    }
+  }, [connected, visible, wallet]);
 
   const runFunding = useCallback(async () => {
     if (inFlightRef.current || disabled || alreadyFunded) return;
     setError(null);
 
     if (!connected || !address) {
-      pendingFundRef.current = true;
-      setPhase('connecting');
-      setVisible(true);
+      await connectWallet();
       return;
     }
 
     if (!canSign || !signMessage) {
-      pendingFundRef.current = false;
       setPhase('error');
       setError(en.walletUnsupported);
       return;
     }
 
     inFlightRef.current = true;
-    pendingFundRef.current = false;
 
     try {
       setPhase('challenging');
-      const challenge = await requestWalletChallenge({ walletAddress: address });
+      const challenge = await requestWalletChallenge({
+        walletAddress: address,
+      });
       setChallengeMessage(challenge.message);
 
       setPhase('awaiting_signature');
@@ -113,7 +221,7 @@ export function FundingAuthorizationPanel({ campaignId, disabled }: Props) {
           msg.includes('rejected') ||
           msg.includes('cancel')
         ) {
-          setError('Signature was rejected in the wallet. Try again.');
+          setError('Signature or connection was rejected in Phantom. Try again.');
         } else {
           setError(err.message);
         }
@@ -129,41 +237,39 @@ export function FundingAuthorizationPanel({ campaignId, disabled }: Props) {
     authorizeFundingMutation,
     campaignId,
     canSign,
+    connectWallet,
     connected,
     disabled,
-    setVisible,
     signMessage,
   ]);
 
-  // After Phantom connects, automatically continue the funding flow.
-  useEffect(() => {
-    if (
-      pendingFundRef.current &&
-      connected &&
-      address &&
-      !inFlightRef.current &&
-      !alreadyFunded
-    ) {
-      void runFunding();
-    }
-  }, [alreadyFunded, address, connected, runFunding]);
-
-  useEffect(() => {
-    if (!connecting && phase === 'connecting' && !connected) {
-      // Modal closed without connecting
-      pendingFundRef.current = false;
-      setPhase('idle');
-    }
-  }, [connecting, connected, phase]);
+  if (alreadyFunded) {
+    return (
+      <div className="stack">
+        <p className="success">{en.fundingSuccess}</p>
+        {fundingTx ? (
+          <>
+            <p className="mono muted">{fundingTx.signature}</p>
+            <p className="mono muted">{fundingTx.memo}</p>
+            <a
+              className="btn btn--primary"
+              href={fundingTx.explorerUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {en.openExplorer}
+            </a>
+          </>
+        ) : (
+          <p className="muted">{en.noReceipt}</p>
+        )}
+      </div>
+    );
+  }
 
   return (
-    <div className="panel stack funding-panel">
-      <h3>{en.fundAction}</h3>
+    <div className="stack">
       <p className="muted">{en.fundingDisclosure}</p>
-      <p className="muted">
-        Use the real advertiser route <span className="mono">/advertiser</span>{' '}
-        (not <span className="mono">/demo-preview</span>).
-      </p>
 
       {address ? (
         <div className="switcher">
@@ -174,27 +280,18 @@ export function FundingAuthorizationPanel({ campaignId, disabled }: Props) {
             type="button"
             className="btn"
             onClick={() => {
-              pendingFundRef.current = false;
-              void disconnect();
-              setPhase('idle');
+              void disconnect().then(() => {
+                select(null);
+                setPhase('idle');
+                setChallengeMessage(null);
+                setError(null);
+              });
             }}
           >
             {en.disconnectWallet}
           </button>
         </div>
-      ) : (
-        <button
-          type="button"
-          className="btn"
-          onClick={() => {
-            setError(null);
-            setPhase('connecting');
-            setVisible(true);
-          }}
-        >
-          {en.connectWallet}
-        </button>
-      )}
+      ) : null}
 
       {challengeMessage ? (
         <pre className="challenge-preview" aria-label={en.challengePreview}>
@@ -207,7 +304,7 @@ export function FundingAuthorizationPanel({ campaignId, disabled }: Props) {
         className="btn btn--primary"
         disabled={
           disabled ||
-          alreadyFunded ||
+          connecting ||
           phase === 'connecting' ||
           phase === 'challenging' ||
           phase === 'awaiting_signature' ||
@@ -215,15 +312,19 @@ export function FundingAuthorizationPanel({ campaignId, disabled }: Props) {
         }
         onClick={() => void runFunding()}
       >
-        {address ? en.signAndFund : `${en.connectWallet} & ${en.fundAction}`}
+        {address ? en.signAndFund : en.connectWallet}
       </button>
 
       {statusLabel(phase) ? (
         <p className={phase === 'success' ? 'success' : 'muted'}>
-          {statusLabel(phase)}
+          <strong>{statusLabel(phase)}</strong>
         </p>
       ) : null}
-      {error ? <p className="error">{error}</p> : null}
+      {error ? (
+        <p className="error" role="alert">
+          {error}
+        </p>
+      ) : null}
       {connected && !canSign ? (
         <p className="error">{en.walletUnsupported}</p>
       ) : null}

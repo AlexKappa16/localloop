@@ -42,6 +42,10 @@ export const en = {
   walletConnected: 'Connected',
   walletUnsupported:
     'This wallet cannot sign messages. Connect a Wallet Standard wallet that supports signMessage.',
+  phantomNotDetected:
+    'Phantom is not available in this browser. Open this page in the browser where the Phantom extension is installed and unlocked, then try again.',
+  walletConnectionTimedOut:
+    'Phantom did not finish connecting. Unlock the extension, approve the connection, and try again.',
   challengePreview: 'Exact authorization message',
   fundingPending: 'Submitting funding proof on Solana devnet…',
   fundingSuccess: 'Campaign marked simulated-funded after confirmed proof.',
@@ -73,6 +77,94 @@ export const en = {
   noRedemption: 'No redemption request yet.',
   mockedDeal: 'Mocked partner path',
   workingDeal: 'Live demo path',
+  continue: 'Continue',
+  useReward: 'Use reward at Magnolia',
+  declineReward: 'Don’t use this reward',
+  waitingOnHost: 'Waiting for Camora to verify your visits.',
+  waitingOnFunding: 'Waiting for Magnolia to simulate campaign funding.',
+  waitingOnCustomer: 'Waiting for Nino to use or decline the reward.',
+  waitingOnApproval: 'Waiting for Camora to approve the deal.',
+  waitingOnRedemption: 'Waiting for Nino to request redemption at Magnolia.',
+  budgetUnchanged: 'Campaign budget unchanged — no host payout.',
+  declinedDone:
+    'You kept the visits at Camora but did not use the Magnolia reward. No payout will be sent.',
+  redemptionSent: 'Redemption requested. Magnolia will validate next.',
+  wizard: {
+    advertiser: {
+      campaignTitle: 'Campaign',
+      campaignHeadline: 'Develop the Night',
+      campaignBody:
+        'Magnolia runs a 0.05 SOL simulated budget to reward Camora guests with film-lab discounts.',
+      fundTitle: 'Fund on Solana',
+      fundHeadline: 'Authorize simulated funding',
+      fundBody:
+        'Sign a message only. The server treasury posts a real memo on Solana devnet.',
+      hostsTitle: 'Hosts',
+      hostsHeadline: 'Camora is your live host path',
+      hostsBody:
+        'One working deal with Camora. TSRE Gym stays a proposed mock partner.',
+      redemptionTitle: 'Redemption',
+      redemptionHeadline: 'Validate Nino’s reward',
+      redemptionBody:
+        'When Nino asks to use the discount at Magnolia, confirm it here.',
+      redemptionWaitingHeadline: 'Waiting for redemption',
+      redemptionWaitingBody:
+        'Nino unlocks the reward after three Camora visits, then chooses to use or decline it.',
+      redemptionDeclinedHeadline: 'Reward declined',
+      redemptionDeclinedBody:
+        'Nino did not use the Magnolia reward. Simulated budget stays at 0.05 SOL.',
+      settleTitle: 'Settlement',
+      settlePaidHeadline: 'Host payout confirmed',
+      settlePaidBody:
+        'Server treasury sent 0.005 SOL to Camora on Solana devnet.',
+      settleDeclinedHeadline: 'No payout',
+      settleDeclinedBody:
+        'Because the reward was not used, advertiser budget did not change.',
+    },
+    host: {
+      dealTitle: 'Incoming deal',
+      dealHeadline: 'Magnolia wants Camora as host',
+      dealBody:
+        '3 verified visits unlock a Magnolia film reward. Host payout is 0.005 SOL on success.',
+      visitsTitle: 'Verify visits',
+      visitsHeadline: 'Staff verification',
+      visitsBody: 'Confirm each qualifying Camora visit for Nino.',
+      earningsTitle: 'Earnings',
+      earningsWaitingHeadline: 'Waiting on customer',
+      earningsWaitingBody:
+        'After the reward unlocks, Nino chooses to use it at Magnolia or decline.',
+      earningsPaidHeadline: 'Paid on Solana devnet',
+      earningsPaidBody: '0.005 SOL arrived from the server demo treasury.',
+      earningsDeclinedHeadline: 'No payout this time',
+      earningsDeclinedBody:
+        'Nino still visited Camora — you earned the foot traffic, but no campaign payout.',
+    },
+    customer: {
+      dealTitle: 'Your deal',
+      dealHeadline: 'Camora × Magnolia',
+      dealBody:
+        'Complete three verified visits at Camora to unlock 10 ₾ off film development at Magnolia.',
+      progressTitle: 'Progress',
+      progressHeadline: 'Visit Camora',
+      progressBody: 'Camora staff verify each visit. You’re already at 1 of 3.',
+      unlockedTitle: 'Reward unlocked',
+      unlockedHeadline: 'Ready at Magnolia',
+      unlockedBody:
+        'Your one-time reward is unlocked. Use it at Magnolia or leave it.',
+      chooseTitle: 'Choose',
+      chooseHeadline: 'Use the reward?',
+      chooseBody:
+        'Using it lets Magnolia validate and pays Camora 0.005 SOL. Declining leaves the budget unchanged.',
+      doneTitle: 'Done',
+      doneUsedHeadline: 'Redemption in progress',
+      doneUsedBody: 'Magnolia will validate your request next.',
+      doneRedeemedHeadline: 'Reward redeemed',
+      doneRedeemedBody: 'Thanks — Camora’s payout can settle on Solana devnet.',
+      doneDeclinedHeadline: 'Reward not used',
+      doneDeclinedBody:
+        'No Magnolia purchase and no host payout. Your Camora visits still happened.',
+    },
+  },
   preview: {
     eyebrow: 'Interactive prototype frontend only',
     title: 'One campaign. Three actors. One live story.',
@@ -416,6 +508,7 @@ export const claimStatusLabel: Record<ClaimStatus, string> = {
   unlocked: 'Unlocked',
   redemption_requested: 'Redemption requested',
   redeemed: 'Redeemed',
+  declined: 'Declined',
 };
 
 export const payoutStatusLabel: Record<PayoutStatus, string> = {

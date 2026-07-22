@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { StepWizard } from '../../components/StepWizard';
 import { StatusBadge } from '../../components/StatusBadge';
 import { TransactionReceipt } from '../../components/TransactionReceipt';
 import { useDemoState } from '../../app/DemoStateProvider';
@@ -7,6 +8,30 @@ import { ids } from '../../../shared/ids';
 import { ApiClientError } from '../../lib/api';
 
 type Props = { businessId: string };
+
+type HostStep = 1 | 2 | 3;
+
+function deriveHostStep(options: {
+  dealStatus: string | undefined;
+  claimStatus: string | undefined;
+  payoutStatus: string | undefined;
+  visits: number;
+  required: number;
+}): HostStep {
+  const { dealStatus, claimStatus, payoutStatus, visits, required } = options;
+  if (
+    claimStatus === 'declined' ||
+    payoutStatus === 'paid' ||
+    payoutStatus === 'failed' ||
+    claimStatus === 'redemption_requested' ||
+    claimStatus === 'redeemed' ||
+    (dealStatus === 'active' && visits >= required)
+  ) {
+    return 3;
+  }
+  if (dealStatus === 'active') return 2;
+  return 1;
+}
 
 export function HostPage({ businessId }: Props) {
   const { state, approveDealMutation, verifyVisitMutation } = useDemoState();
@@ -23,14 +48,23 @@ export function HostPage({ businessId }: Props) {
   const payoutTx = state.transactions.find(
     (tx) => tx.type === 'host_payout' && tx.dealId === deal?.id,
   );
-  const visits = state.visits
-    .filter((v) => v.dealId === deal?.id)
-    .sort((a, b) => b.sequence - a.sequence);
 
   const campaignFunded =
     campaign?.status === 'simulated_funded' ||
     campaign?.status === 'live' ||
     campaign?.status === 'completed';
+
+  const step = useMemo(
+    () =>
+      deriveHostStep({
+        dealStatus: deal?.status,
+        claimStatus: claim?.status,
+        payoutStatus: payout?.status,
+        visits: claim?.verifiedVisits ?? 0,
+        required: claim?.requiredVisits ?? 3,
+      }),
+    [deal?.status, claim?.status, payout?.status, claim?.verifiedVisits, claim?.requiredVisits],
+  );
 
   if (!deal) {
     return (
@@ -68,87 +102,96 @@ export function HostPage({ businessId }: Props) {
     }
   }
 
-  return (
-    <div className="stack">
-      <div className="panel stack">
-        <h2>{business?.name ?? en.personaCamora}</h2>
-        <p className="muted">{en.workspaceHost}</p>
-        <p className="staff-banner">{en.staffMode}</p>
-      </div>
+  const w = en.wizard.host;
 
-      <div className="panel stack">
-        <h3>{en.dealTerms}</h3>
+  if (step === 1) {
+    return (
+      <StepWizard
+        step={1}
+        total={3}
+        stepTitle={w.dealTitle}
+        headline={w.dealHeadline}
+        body={w.dealBody}
+        badge={<StatusBadge kind="deal" status={deal.status} />}
+        waiting={campaignFunded ? null : en.waitingOnFunding}
+        primaryLabel={campaignFunded ? en.approveDeal : undefined}
+        onPrimary={campaignFunded ? () => void onApprove() : undefined}
+        primaryDisabled={!campaignFunded || deal.status !== 'proposed'}
+        primaryBusy={busy}
+        error={error}
+      >
+        <p className="muted">{business?.name}</p>
         <p>
-          {
-            state.businesses.find((b) => b.id === campaign?.advertiserBusinessId)
-              ?.name
-          }{' '}
-          · {campaign?.name}
+          {deal.requirement} · {deal.reward}
         </p>
-        <p>{deal.requirement}</p>
-        <p>
-          {en.rewardTerms}: {deal.reward}
-        </p>
-        <p className="mono">Host payout {deal.payoutSol} SOL (devnet)</p>
-        <StatusBadge kind="deal" status={deal.status} />
+        <p className="mono">Payout {deal.payoutSol} SOL on success</p>
+      </StepWizard>
+    );
+  }
 
-        {deal.status === 'proposed' ? (
-          <button
-            type="button"
-            className="btn btn--primary"
-            disabled={busy || !campaignFunded}
-            onClick={() => void onApprove()}
-          >
-            {campaignFunded ? en.approveDeal : en.approveDealDisabled}
-          </button>
-        ) : null}
-      </div>
-
-      <div className="panel stack">
-        <div className="qr-card" aria-hidden="true">
-          <div className="qr-card__mark">LL</div>
-          <p>{en.qrPlacement}</p>
+  if (step === 2) {
+    const visits = claim?.verifiedVisits ?? 0;
+    const required = claim?.requiredVisits ?? 3;
+    return (
+      <StepWizard
+        step={2}
+        total={3}
+        stepTitle={w.visitsTitle}
+        headline={w.visitsHeadline}
+        body={w.visitsBody}
+        primaryLabel={en.verifyVisit}
+        onPrimary={() => void onVerify()}
+        primaryDisabled={visits >= required}
+        primaryBusy={busy}
+        error={error}
+      >
+        <div className="stamp-row" aria-label="visit progress">
+          {Array.from({ length: required }).map((_, i) => (
+            <div
+              key={i}
+              className={`stamp ${visits > i ? 'stamp--filled' : ''}`}
+            >
+              {visits > i ? '✓' : i + 1}
+            </div>
+          ))}
         </div>
-
-        <h3>{en.verifyVisit}</h3>
         <p>
-          {en.visitsProgress}: {claim?.verifiedVisits ?? 0}/
-          {claim?.requiredVisits ?? 3}
+          {visits}/{required}
         </p>
-        <button
-          type="button"
-          className="btn btn--primary"
-          disabled={
-            busy ||
-            deal.status !== 'active' ||
-            (claim?.verifiedVisits ?? 0) >= (claim?.requiredVisits ?? 3)
-          }
-          onClick={() => void onVerify()}
-        >
-          {en.verifyVisit}
-        </button>
-        {error ? <p className="error">{error}</p> : null}
+      </StepWizard>
+    );
+  }
 
-        <h4>Recent verifications</h4>
-        {visits.length === 0 ? (
-          <p className="muted">{en.emptyState}</p>
-        ) : (
-          <ul className="history-list">
-            {visits.map((visit) => (
-              <li key={visit.id}>
-                <span className="mono">#{visit.sequence}</span> {visit.customerId}{' '}
-                · {new Date(visit.verifiedAt).toLocaleString()}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+  const declined = claim?.status === 'declined';
+  const paid = payout?.status === 'paid';
 
-      <div className="panel stack">
-        <h3>{en.payoutStatus}</h3>
-        {payout ? <StatusBadge kind="payout" status={payout.status} /> : null}
-        <TransactionReceipt transaction={payoutTx} />
-      </div>
-    </div>
+  return (
+    <StepWizard
+      step={3}
+      total={3}
+      stepTitle={w.earningsTitle}
+      headline={
+        paid
+          ? w.earningsPaidHeadline
+          : declined
+            ? w.earningsDeclinedHeadline
+            : w.earningsWaitingHeadline
+      }
+      body={
+        paid
+          ? w.earningsPaidBody
+          : declined
+            ? w.earningsDeclinedBody
+            : w.earningsWaitingBody
+      }
+      badge={
+        payout ? <StatusBadge kind="payout" status={payout.status} /> : null
+      }
+      waiting={
+        !paid && !declined ? en.waitingOnCustomer : null
+      }
+    >
+      {paid ? <TransactionReceipt transaction={payoutTx} /> : null}
+    </StepWizard>
   );
 }

@@ -13,6 +13,7 @@ import {
   ApiClientError,
   approveDeal,
   authorizeCampaignFunding,
+  declineClaimRedemption,
   fetchState,
   requestClaimRedemption,
   resetDemo,
@@ -33,6 +34,7 @@ type DemoStateContextValue = {
   approveDealMutation: (dealId: string) => Promise<void>;
   verifyVisitMutation: (dealId: string, customerId: string) => Promise<void>;
   requestRedemptionMutation: (claimId: string) => Promise<void>;
+  declineRedemptionMutation: (claimId: string) => Promise<void>;
   validateClaimMutation: (claimId: string) => Promise<void>;
   authorizeFundingMutation: (
     campaignId: string,
@@ -102,6 +104,14 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
     [applyState],
   );
 
+  const declineRedemptionMutation = useCallback(
+    async (claimId: string) => {
+      const result = await declineClaimRedemption(claimId);
+      applyState(result.state);
+    },
+    [applyState],
+  );
+
   const validateClaimMutation = useCallback(
     async (claimId: string) => {
       const result = await validateClaim(claimId);
@@ -148,6 +158,7 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
       approveDealMutation,
       verifyVisitMutation,
       requestRedemptionMutation,
+      declineRedemptionMutation,
       validateClaimMutation,
       authorizeFundingMutation,
     }),
@@ -161,6 +172,7 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
       approveDealMutation,
       verifyVisitMutation,
       requestRedemptionMutation,
+      declineRedemptionMutation,
       validateClaimMutation,
       authorizeFundingMutation,
     ],

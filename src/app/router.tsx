@@ -3,8 +3,6 @@ import { ids } from '../../shared/ids';
 import type { BusinessCapability } from '../../shared/types';
 import { AppShell } from '../components/AppShell';
 import { BusinessWorkspaceSwitcher } from '../components/BusinessWorkspaceSwitcher';
-import { StatusBadge } from '../components/StatusBadge';
-import { TransactionReceipt } from '../components/TransactionReceipt';
 import { en } from '../copy/en';
 import { AdvertiserPage } from '../features/advertiser/AdvertiserPage';
 import { CustomerPage } from '../features/customer/CustomerPage';
@@ -13,9 +11,9 @@ import { useDemoState } from './DemoStateProvider';
 
 function DemoLauncher() {
   return (
-    <AppShell title={en.brand}>
+    <AppShell>
       <div className="panel stack">
-        <p>{en.demoLauncherTitle}</p>
+        <h2>{en.demoLauncherTitle}</h2>
         <p>{en.demoLauncherBody}</p>
         <div className="launcher-grid">
           <Link className="btn btn--primary" to="/customer">
@@ -27,14 +25,6 @@ function DemoLauncher() {
           <Link className="btn btn--primary" to="/host">
             {en.openHost}
           </Link>
-        </div>
-        <div className="stack">
-          <div>
-            <StatusBadge kind="claim" status="locked" />{' '}
-            <StatusBadge kind="payout" status="not_ready" />{' '}
-            <StatusBadge kind="campaign" status="draft" />
-          </div>
-          <TransactionReceipt transaction={null} />
         </div>
       </div>
     </AppShell>
@@ -84,10 +74,7 @@ function BusinessWorkspaceRoute({
 
   if (workspace === 'advertiser') {
     return (
-      <AppShell
-        title={`${business.name} — ${en.workspaceAdvertiser}`}
-        workspaceSwitch={switcher}
-      >
+      <AppShell title={business.name} workspaceSwitch={switcher}>
         {error ? <p className="error">{error}</p> : null}
         <AdvertiserPage businessId={business.id} />
       </AppShell>
@@ -95,10 +82,7 @@ function BusinessWorkspaceRoute({
   }
 
   return (
-    <AppShell
-      title={`${business.name} — ${en.workspaceHost}`}
-      workspaceSwitch={switcher}
-    >
+    <AppShell title={business.name} workspaceSwitch={switcher}>
       {error ? <p className="error">{error}</p> : null}
       <HostPage businessId={business.id} />
     </AppShell>

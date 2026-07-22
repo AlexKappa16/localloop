@@ -410,6 +410,12 @@ VITE_SOLANA_RPC_URL=https://api.devnet.solana.com
 Only non-secret browser configuration may use `VITE_*`. Commit `.env.example`,
 never `.env` or generated keypairs.
 
+The server starts without Solana secrets: `/api/health` reports
+`solanaReady: false`, non-Solana demo flows remain usable, and funding/payout
+endpoints fail with clear configuration guidance instead of fabricating
+Explorer receipts. Run `npm run solana:check` to validate cluster, RPC, treasury
+parse/address/balance, and host pubkey without printing the private key.
+
 ## Language and product copy
 
 All app-owned user-facing copy must be clear, natural English: navigation,

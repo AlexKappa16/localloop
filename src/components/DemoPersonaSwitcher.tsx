@@ -1,17 +1,17 @@
 import { NavLink } from 'react-router-dom';
 import { ids } from '../../shared/ids';
-import { ka } from '../copy/ka';
+import { en } from '../copy/en';
 
 const personas = [
-  { to: `/customer/${ids.nino}`, label: ka.personaNino },
-  { to: `/business/${ids.magnolia}/advertiser`, label: ka.personaMagnolia },
-  { to: `/business/${ids.camora}/host`, label: ka.personaCamora },
+  { to: `/customer/${ids.nino}`, label: en.personaNino },
+  { to: `/business/${ids.magnolia}/advertiser`, label: en.personaMagnolia },
+  { to: `/business/${ids.camora}/host`, label: en.personaCamora },
 ] as const;
 
 export function DemoPersonaSwitcher() {
   return (
-    <div className="switcher" aria-label={ka.demoMode}>
-      <span className="switcher__label">{ka.demoMode}</span>
+    <div className="switcher" aria-label={en.demoMode}>
+      <span className="switcher__label">{en.demoMode}</span>
       {personas.map((persona) => (
         <NavLink
           key={persona.to}

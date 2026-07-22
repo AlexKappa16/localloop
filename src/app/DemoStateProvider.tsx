@@ -9,7 +9,16 @@ import {
 } from 'react';
 import { createEmptyDemoState } from '../../shared/seedSnapshot';
 import type { DemoState } from '../../shared/types';
-import { fetchState, resetDemo } from '../lib/api';
+import {
+  ApiClientError,
+  approveDeal,
+  authorizeCampaignFunding,
+  fetchState,
+  requestClaimRedemption,
+  resetDemo,
+  validateClaim,
+  verifyDealVisit,
+} from '../lib/api';
 import { subscribeToRevisions } from '../lib/events';
 
 type DemoStatus = 'loading' | 'ready' | 'error';
@@ -17,36 +26,106 @@ type DemoStatus = 'loading' | 'ready' | 'error';
 type DemoStateContextValue = {
   state: DemoState;
   status: DemoStatus;
+  error: string | null;
+  /** @deprecated use `error` */
   errorKa: string | null;
   refresh: () => Promise<void>;
   reset: () => Promise<void>;
+  applyState: (next: DemoState) => void;
+  approveDealMutation: (dealId: string) => Promise<void>;
+  verifyVisitMutation: (dealId: string, customerId: string) => Promise<void>;
+  requestRedemptionMutation: (claimId: string) => Promise<void>;
+  validateClaimMutation: (claimId: string) => Promise<void>;
+  authorizeFundingMutation: (
+    campaignId: string,
+    payload: {
+      challengeId: string;
+      walletAddress: string;
+      signatureBase58: string;
+    },
+  ) => Promise<void>;
 };
 
 const DemoStateContext = createContext<DemoStateContextValue | null>(null);
 
+function toMessage(err: unknown): string {
+  if (err instanceof ApiClientError) return err.message;
+  if (err instanceof Error) return err.message;
+  return 'Failed to load demo state';
+}
+
 export function DemoStateProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<DemoState>(() => createEmptyDemoState(0));
   const [status, setStatus] = useState<DemoStatus>('loading');
-  const [errorKa, setErrorKa] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const applyState = useCallback((next: DemoState) => {
+    setState(next);
+    setStatus('ready');
+    setError(null);
+  }, []);
 
   const refresh = useCallback(async () => {
     try {
       const next = await fetchState();
-      setState(next);
-      setStatus('ready');
-      setErrorKa(null);
+      applyState(next);
     } catch (err) {
       setStatus('error');
-      setErrorKa(err instanceof Error ? err.message : 'სტატუსის ჩატვირთვა ვერ მოხერხდა');
+      setError(toMessage(err));
     }
-  }, []);
+  }, [applyState]);
 
   const reset = useCallback(async () => {
     const result = await resetDemo();
-    setState(result.state);
-    setStatus('ready');
-    setErrorKa(null);
-  }, []);
+    applyState(result.state);
+  }, [applyState]);
+
+  const approveDealMutation = useCallback(
+    async (dealId: string) => {
+      const result = await approveDeal(dealId);
+      applyState(result.state);
+    },
+    [applyState],
+  );
+
+  const verifyVisitMutation = useCallback(
+    async (dealId: string, customerId: string) => {
+      const result = await verifyDealVisit(dealId, customerId);
+      applyState(result.state);
+    },
+    [applyState],
+  );
+
+  const requestRedemptionMutation = useCallback(
+    async (claimId: string) => {
+      const result = await requestClaimRedemption(claimId);
+      applyState(result.state);
+    },
+    [applyState],
+  );
+
+  const validateClaimMutation = useCallback(
+    async (claimId: string) => {
+      const result = await validateClaim(claimId);
+      applyState(result.state);
+    },
+    [applyState],
+  );
+
+  const authorizeFundingMutation = useCallback(
+    async (
+      campaignId: string,
+      payload: {
+        challengeId: string;
+        walletAddress: string;
+        signatureBase58: string;
+      },
+    ) => {
+      const result = await authorizeCampaignFunding(campaignId, payload);
+      applyState(result.state);
+    },
+    [applyState],
+  );
 
   useEffect(() => {
     void refresh();
@@ -61,8 +140,33 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
   }, [refresh, state.revision]);
 
   const value = useMemo(
-    () => ({ state, status, errorKa, refresh, reset }),
-    [state, status, errorKa, refresh, reset],
+    () => ({
+      state,
+      status,
+      error,
+      errorKa: error,
+      refresh,
+      reset,
+      applyState,
+      approveDealMutation,
+      verifyVisitMutation,
+      requestRedemptionMutation,
+      validateClaimMutation,
+      authorizeFundingMutation,
+    }),
+    [
+      state,
+      status,
+      error,
+      refresh,
+      reset,
+      applyState,
+      approveDealMutation,
+      verifyVisitMutation,
+      requestRedemptionMutation,
+      validateClaimMutation,
+      authorizeFundingMutation,
+    ],
   );
 
   return (

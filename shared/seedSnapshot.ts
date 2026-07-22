@@ -1,7 +1,8 @@
 import type { DemoState } from './types';
 import { ids } from './ids';
+import { CAMORA_PAYOUT_SOL, CAMPAIGN_BUDGET_SOL, TSRE_PAYOUT_SOL } from './contracts';
 
-/** Minimal seed snapshot for LL-101 scaffolding. LL-102 owns full domain seed. */
+/** Canonical seeded demo state. Backend restart or reset restores this. */
 export function createEmptyDemoState(revision = 0): DemoState {
   return {
     revision,
@@ -10,13 +11,13 @@ export function createEmptyDemoState(revision = 0): DemoState {
         id: ids.magnolia,
         name: 'Magnolia Film Lab',
         capabilities: ['advertiser', 'host'],
-        addressKa: 'ეგნატე ნინოშვილის 8, თბილისი',
+        address: '8 Egnate Ninoshvili Street, Tbilisi',
       },
       {
         id: ids.camora,
         name: 'Camora',
         capabilities: ['advertiser', 'host'],
-        addressKa: 'ეგნატე ნინოშვილის 8, თბილისი',
+        address: '8 Egnate Ninoshvili Street, Tbilisi',
       },
       {
         id: ids.tsreGym,
@@ -27,21 +28,21 @@ export function createEmptyDemoState(revision = 0): DemoState {
     customers: [
       {
         id: ids.nino,
-        displayName: 'ნინო',
+        displayName: 'Nino',
       },
     ],
     campaigns: [
       {
         id: ids.campaign,
-        nameKa: '„გაამჟღავნე ღამე“',
+        name: 'Develop the Night',
         advertiserBusinessId: ids.magnolia,
         status: 'draft',
         budget: {
-          totalSol: 0.05,
-          remainingSol: 0.05,
+          totalSol: CAMPAIGN_BUDGET_SOL,
+          remainingSol: CAMPAIGN_BUDGET_SOL,
           reservedSol: 0,
           paidSol: 0,
-          labelKa: 'სიმულირებული ბიუჯეტი',
+          label: 'Simulated budget',
         },
       },
     ],
@@ -51,10 +52,10 @@ export function createEmptyDemoState(revision = 0): DemoState {
         campaignId: ids.campaign,
         hostBusinessId: ids.camora,
         status: 'proposed',
-        requirementKa: 'Camora-ში 3 დადასტურებული ვიზიტი',
-        rewardKa:
-          '10 ₾ ფასდაკლება 40 ₾-ზე მეტი ღირებულების ფირის გამჟღავნებასა და სკანირებაზე',
-        payoutSol: 0.005,
+        requirement: '3 verified visits at Camora',
+        reward:
+          '10 ₾ off film development and scanning on orders over 40 ₾',
+        payoutSol: CAMORA_PAYOUT_SOL,
         maxRedemptions: 10,
       },
       {
@@ -62,9 +63,9 @@ export function createEmptyDemoState(revision = 0): DemoState {
         campaignId: ids.campaign,
         hostBusinessId: ids.tsreGym,
         status: 'proposed',
-        requirementKa: 'TSRE Gym-ში 2 დადასტურებული ვიზიტი',
-        rewardKa: 'მოკი პარტნიორული შეთავაზება',
-        payoutSol: 0.007,
+        requirement: '2 verified visits at TSRE Gym',
+        reward: 'Mock partner offer — demo only',
+        payoutSol: TSRE_PAYOUT_SOL,
         maxRedemptions: 5,
         mocked: true,
       },
@@ -96,7 +97,7 @@ export function createEmptyDemoState(revision = 0): DemoState {
         dealId: ids.camoraDeal,
         hostBusinessId: ids.camora,
         status: 'not_ready',
-        amountSol: 0.005,
+        amountSol: CAMORA_PAYOUT_SOL,
       },
     ],
     transactions: [],

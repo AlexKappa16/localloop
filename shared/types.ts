@@ -13,7 +13,7 @@ export interface Business {
   id: BusinessId | string;
   name: string;
   capabilities: BusinessCapability[];
-  addressKa?: string;
+  address?: string;
 }
 
 export interface Customer {
@@ -26,12 +26,12 @@ export interface CampaignBudget {
   remainingSol: number;
   reservedSol: number;
   paidSol: number;
-  labelKa: string;
+  label: string;
 }
 
 export interface Campaign {
   id: CampaignId | string;
-  nameKa: string;
+  name: string;
   advertiserBusinessId: string;
   status: CampaignStatus;
   budget: CampaignBudget;
@@ -42,8 +42,8 @@ export interface Deal {
   campaignId: string;
   hostBusinessId: string;
   status: DealStatus;
-  requirementKa: string;
-  rewardKa: string;
+  requirement: string;
+  reward: string;
   payoutSol: number;
   maxRedemptions: number;
   mocked?: boolean;

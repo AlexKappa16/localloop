@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ka } from '../copy/ka';
+import { en } from '../copy/en';
 import { useDemoState } from '../app/DemoStateProvider';
 
 export function DemoResetButton() {
@@ -13,7 +13,7 @@ export function DemoResetButton() {
     try {
       await reset();
     } catch (err) {
-      setError(err instanceof Error ? err.message : ka.errorGeneric);
+      setError(err instanceof Error ? err.message : en.errorGeneric);
     } finally {
       setBusy(false);
     }
@@ -24,10 +24,10 @@ export function DemoResetButton() {
       <button
         type="button"
         className="btn btn--danger"
-        onClick={onReset}
+        onClick={() => void onReset()}
         disabled={busy}
       >
-        {busy ? ka.loading : ka.reset}
+        {busy ? en.loading : en.reset}
       </button>
       {error ? <p className="muted">{error}</p> : null}
     </div>

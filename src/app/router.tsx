@@ -1,32 +1,31 @@
-import { Navigate, Route, Routes, useParams } from 'react-router-dom';
+import { Navigate, Route, Routes, useParams, Link } from 'react-router-dom';
 import { ids } from '../../shared/ids';
 import type { BusinessCapability } from '../../shared/types';
 import { AppShell } from '../components/AppShell';
 import { BusinessWorkspaceSwitcher } from '../components/BusinessWorkspaceSwitcher';
 import { StatusBadge } from '../components/StatusBadge';
 import { TransactionReceipt } from '../components/TransactionReceipt';
-import { ka } from '../copy/ka';
+import { en } from '../copy/en';
 import { AdvertiserPage } from '../features/advertiser/AdvertiserPage';
 import { CustomerPage } from '../features/customer/CustomerPage';
 import { HostPage } from '../features/host/HostPage';
 import { useDemoState } from './DemoStateProvider';
-import { Link } from 'react-router-dom';
 
 function DemoLauncher() {
   return (
-    <AppShell title={ka.brand}>
+    <AppShell title={en.brand}>
       <div className="panel stack">
-        <p>{ka.demoLauncherTitle}</p>
-        <p>{ka.demoLauncherBody}</p>
+        <p>{en.demoLauncherTitle}</p>
+        <p>{en.demoLauncherBody}</p>
         <div className="launcher-grid">
           <Link className="btn btn--primary" to="/customer">
-            {ka.openCustomer}
+            {en.openCustomer}
           </Link>
           <Link className="btn btn--primary" to="/advertiser">
-            {ka.openAdvertiser}
+            {en.openAdvertiser}
           </Link>
           <Link className="btn btn--primary" to="/host">
-            {ka.openHost}
+            {en.openHost}
           </Link>
         </div>
         <div className="stack">
@@ -48,13 +47,13 @@ function BusinessWorkspaceRoute({
   workspace: BusinessCapability;
 }) {
   const { businessId = '' } = useParams();
-  const { state, status, errorKa } = useDemoState();
+  const { state, status, error } = useDemoState();
   const business = state.businesses.find((item) => item.id === businessId);
 
   if (status === 'loading') {
     return (
       <AppShell>
-        <p>{ka.loading}</p>
+        <p>{en.loading}</p>
       </AppShell>
     );
   }
@@ -67,9 +66,9 @@ function BusinessWorkspaceRoute({
     return (
       <AppShell>
         <div className="panel">
-          <p>{ka.capabilityMissing}</p>
+          <p>{en.capabilityMissing}</p>
           <Link className="btn" to="/">
-            {ka.brand}
+            {en.brand}
           </Link>
         </div>
       </AppShell>
@@ -86,10 +85,10 @@ function BusinessWorkspaceRoute({
   if (workspace === 'advertiser') {
     return (
       <AppShell
-        title={`${business.name} — ${ka.workspaceAdvertiser}`}
+        title={`${business.name} — ${en.workspaceAdvertiser}`}
         workspaceSwitch={switcher}
       >
-        {errorKa ? <p>{errorKa}</p> : null}
+        {error ? <p className="error">{error}</p> : null}
         <AdvertiserPage businessId={business.id} />
       </AppShell>
     );
@@ -97,10 +96,10 @@ function BusinessWorkspaceRoute({
 
   return (
     <AppShell
-      title={`${business.name} — ${ka.workspaceHost}`}
+      title={`${business.name} — ${en.workspaceHost}`}
       workspaceSwitch={switcher}
     >
-      {errorKa ? <p>{errorKa}</p> : null}
+      {error ? <p className="error">{error}</p> : null}
       <HostPage businessId={business.id} />
     </AppShell>
   );
@@ -116,7 +115,7 @@ function CustomerRoute() {
   }
 
   return (
-    <AppShell title={`${ka.personaNino}`}>
+    <AppShell title={en.personaNino}>
       <CustomerPage customerId={customer.id} />
     </AppShell>
   );

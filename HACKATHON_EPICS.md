@@ -604,6 +604,12 @@ VITE_SOLANA_RPC_URL=https://api.devnet.solana.com
 source code, logs, state, or API responses. Commit `.env.example`, never `.env`
 or generated keypair files.
 
+Run `npm run solana:check` to verify cluster=`devnet`, RPC reachability, treasury
+secret parse (public address + balance only), and host public key validity.
+The command must never print the private key. When configuration is missing,
+`/api/health` returns `solanaReady: false` and Solana mutations fail with clear
+retryable guidance instead of fabricating Explorer URLs.
+
 Implementation references: [Solana clusters and devnet](https://solana.com/docs/core),
 [official devnet faucet](https://faucet.solana.com/), and
 [Solana memo payments](https://solana.com/docs/payments/send-payments/payment-with-memo).

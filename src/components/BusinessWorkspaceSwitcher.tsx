@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import type { BusinessCapability } from '../../shared/types';
-import { ka } from '../copy/ka';
+import { en } from '../copy/en';
 
 type Props = {
   businessId: string;
@@ -14,18 +14,18 @@ export function BusinessWorkspaceSwitcher({ businessId, capabilities }: Props) {
   if (!canAdvertiser && !canHost) return null;
 
   return (
-    <div className="switcher" aria-label="ბიზნესის სივრცე">
+    <div className="switcher" aria-label="Business workspace">
       {canAdvertiser ? (
         <NavLink
           to={`/business/${businessId}/advertiser`}
           className="btn switcher__btn"
         >
-          {ka.workspaceAdvertiser}
+          {en.workspaceAdvertiser}
         </NavLink>
       ) : null}
       {canHost ? (
         <NavLink to={`/business/${businessId}/host`} className="btn switcher__btn">
-          {ka.workspaceHost}
+          {en.workspaceHost}
         </NavLink>
       ) : null}
     </div>

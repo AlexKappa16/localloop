@@ -1,9 +1,9 @@
 import {
-  campaignStatusKa,
-  claimStatusKa,
-  dealStatusKa,
-  payoutStatusKa,
-} from '../copy/ka';
+  campaignStatusLabel,
+  claimStatusLabel,
+  dealStatusLabel,
+  payoutStatusLabel,
+} from '../copy/en';
 import type {
   CampaignStatus,
   ClaimStatus,
@@ -22,13 +22,13 @@ type Props =
 function labelFor(kind: StatusKind, status: string): string {
   switch (kind) {
     case 'claim':
-      return claimStatusKa[status as ClaimStatus];
+      return claimStatusLabel[status as ClaimStatus];
     case 'payout':
-      return payoutStatusKa[status as PayoutStatus];
+      return payoutStatusLabel[status as PayoutStatus];
     case 'campaign':
-      return campaignStatusKa[status as CampaignStatus];
+      return campaignStatusLabel[status as CampaignStatus];
     case 'deal':
-      return dealStatusKa[status as DealStatus];
+      return dealStatusLabel[status as DealStatus];
   }
 }
 

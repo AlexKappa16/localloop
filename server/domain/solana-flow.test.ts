@@ -103,7 +103,7 @@ describe('wallet challenges', () => {
           walletAddress,
           campaignId: ids.campaign,
         }),
-      (err: Error & { code?: string }) => err.code === 'CHALLENGE_REPLAY',
+      (err: Error & { code?: string }) => err.code === 'CHALLENGE_NOT_FOUND',
     );
   });
 

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LocalLoop — Solana devnet proof</title>
+    <link rel="icon" href="data:," />
+    <style>
+      body { max-width: 760px; margin: 48px auto; padding: 0 20px; font: 16px/1.5 system-ui; }
+      main { border: 2px solid #17271f; padding: 28px; }
+      button { min-height: 48px; padding: 10px 18px; font: inherit; font-weight: 700; }
+      pre { overflow: auto; white-space: pre-wrap; background: #f2f3ef; padding: 14px; }
+      .notice { border-left: 4px solid #d58b00; padding: 10px 14px; background: #fff7dc; }
+      .error { color: #9f251d; }
+      .success { color: #176a3a; }
+      [hidden] { display: none; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Solana devnet authorization proof</h1>
+      <p>
+        The advertiser signs readable text only. No SOL leaves the connected
+        wallet; the server treasury pays for the devnet memo.
+      </p>
+      <p class="notice">
+        If Phantom is unavailable, this harness can use a clearly labeled
+        <strong>ephemeral browser demo signer</strong>. That disposable key
+        exists only in this tab and is not an advertiser wallet.
+      </p>
+      <button id="run" type="button">Create authorization proof</button>
+      <p id="status" role="status" aria-live="polite"></p>
+      <section id="challenge" hidden>
+        <strong>Exact message being signed</strong>
+        <pre id="challenge-text"></pre>
+      </section>
+      <section id="receipt" hidden>
+        <strong>Confirmed devnet receipt</strong>
+        <pre id="receipt-text"></pre>
+        <a id="explorer" target="_blank" rel="noreferrer">Open in Solana Explorer</a>
+      </section>
+    </main>
+    <script>
+      const campaignId = 'magnolia-develop-the-night';
+      const runButton = document.querySelector('#run');
+      const status = document.querySelector('#status');
+      const challengeSection = document.querySelector('#challenge');
+      const challengeText = document.querySelector('#challenge-text');
+      const receiptSection = document.querySelector('#receipt');
+      const receiptText = document.querySelector('#receipt-text');
+      const explorer = document.querySelector('#explorer');
+
+      runButton.addEventListener('click', runFundingProof);
+
+      async function runFundingProof() {
+        runButton.disabled = true;
+        receiptSection.hidden = true;
+        try {
+          // Current Phantom and its legacy injected provider are both supported.
+          const provider = window.phantom?.solana ?? window.solana;
+          const signer = await createAuthorizationSigner(provider);
+          setStatus('Requesting a one-time wallet challenge…');
+          const challenge = await api('/api/wallet/challenge', {
+            walletAddress: signer.walletAddress,
+          });
+          challengeText.textContent = challenge.message;
+          challengeSection.hidden = false;
+
+          setStatus(signer.prompt);
+          const signature = await signer.sign(
+            new TextEncoder().encode(challenge.message),
+          );
+          setStatus('The server is confirming the devnet memo…');
+          const result = await api(
+            `/api/campaigns/${campaignId}/authorize-funding`,
+            {
+              challengeId: challenge.challengeId,
+              walletAddress: signer.walletAddress,
+              signatureBase58: encodeBase58(signature),
+            },
+          );
+          const receipt = result.data?.transaction ?? result.data?.receipt;
+          if (!receipt?.explorerUrl?.startsWith('https://explorer.solana.com/tx/')) {
+            throw new Error('The server did not return a valid Explorer receipt.');
+          }
+          receiptText.textContent = [
+            `Signer: ${signer.label}`,
+            `Wallet: ${shorten(signer.walletAddress)}`,
+            `Signature: ${shorten(receipt.signature)}`,
+            `Memo: ${receipt.memo}`,
+            `Cluster: ${receipt.cluster}`,
+            `Status: ${receipt.status}`,
+          ].join('\n');
+          explorer.href = receipt.explorerUrl;
+          receiptSection.hidden = false;
+          setStatus('Confirmed on Solana devnet.', 'success');
+        } catch (error) {
+          setStatus(error?.message ?? 'Unable to create the proof.', 'error');
+          runButton.disabled = false;
+        }
+      }
+
+      async function createAuthorizationSigner(provider) {
+        if (provider?.isPhantom && typeof provider.signMessage === 'function') {
+          setStatus('Connecting to Phantom…');
+          const connection = await provider.connect();
+          return {
+            label: 'Phantom signMessage',
+            walletAddress: connection.publicKey.toString(),
+            prompt: 'Approve the readable message in Phantom…',
+            sign: async (message) =>
+              (await provider.signMessage(message, 'utf8')).signature,
+          };
+        }
+        if (!window.isSecureContext || !crypto.subtle) {
+          throw new Error('Phantom is unavailable and this page cannot create a browser demo signer.');
+        }
+        setStatus('Creating an ephemeral browser demo signer (not Phantom)…');
+        const keyPair = await crypto.subtle.generateKey(
+          { name: 'Ed25519' },
+          true,
+          ['sign', 'verify'],
+        );
+        const publicKey = new Uint8Array(
+          await crypto.subtle.exportKey('raw', keyPair.publicKey),
+        );
+        return {
+          label: 'Ephemeral browser demo signer (not Phantom)',
+          walletAddress: encodeBase58(publicKey),
+          prompt: 'Signing with the disposable in-tab demo key…',
+          sign: async (message) =>
+            new Uint8Array(
+              await crypto.subtle.sign({ name: 'Ed25519' }, keyPair.privateKey, message),
+            ),
+        };
+      }
+
+      async function api(url, body) {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error?.message ?? 'API error');
+        return payload;
+      }
+
+      function setStatus(message, tone = '') {
+        status.textContent = message;
+        status.className = tone;
+      }
+      function shorten(value) {
+        return `${value.slice(0, 8)}…${value.slice(-8)}`;
+      }
+      function encodeBase58(bytes) {
+        const alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+        const digits = [0];
+        for (const byte of bytes) {
+          let carry = byte;
+          for (let index = 0; index < digits.length; index += 1) {
+            carry += digits[index] << 8;
+            digits[index] = carry % 58;
+            carry = Math.floor(carry / 58);
+          }
+          while (carry > 0) {
+            digits.push(carry % 58);
+            carry = Math.floor(carry / 58);
+          }
+        }
+        let result = '';
+        for (let index = 0; bytes[index] === 0 && index < bytes.length - 1; index += 1) {
+          result += alphabet[0];
+        }
+        for (let index = digits.length - 1; index >= 0; index -= 1) {
+          result += alphabet[digits[index]];
+        }
+        return result;
+      }
+    </script>
+  </body>
+</html>

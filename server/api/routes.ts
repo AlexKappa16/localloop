@@ -29,10 +29,10 @@ import {
 } from '../solana/payout';
 import {
   clearChallenges,
-  consumeChallenge,
+  fundingChallengeStore,
   issueFundingChallenge,
 } from '../wallet/challenges';
-import { verifyWalletMessageSignature } from '../wallet/verifySignature';
+import { verifyAndConsumeFundingAuthorization } from '../wallet/verifySignature';
 
 function challengeError(err: unknown): AppError {
   if (err instanceof AppError) return err;
@@ -45,9 +45,11 @@ function challengeError(err: unknown): AppError {
   const status =
     code === 'CHALLENGE_NOT_FOUND'
       ? 404
-      : code === 'CHALLENGE_EXPIRED' || code === 'CHALLENGE_REPLAY'
-        ? 409
-        : 400;
+      : code === 'SIGNATURE_INVALID'
+        ? 401
+        : code === 'CHALLENGE_EXPIRED' || code === 'CHALLENGE_REPLAY'
+          ? 409
+          : 400;
   return new AppError({ code, message, status, retryable: false });
 }
 
@@ -186,30 +188,10 @@ export function createApiRouter(): Router {
         }
       }
 
-      let challenge;
       try {
-        challenge = consumeChallenge({
-          challengeId: body.challengeId,
-          walletAddress: body.walletAddress,
-          campaignId,
-        });
+        verifyAndConsumeFundingAuthorization(fundingChallengeStore, body);
       } catch (err) {
         throw challengeError(err);
-      }
-
-      const valid = verifyWalletMessageSignature({
-        walletAddress: body.walletAddress,
-        message: challenge.message,
-        signatureBase58: body.signatureBase58,
-      });
-      if (!valid) {
-        throw new AppError({
-          code: 'SIGNATURE_INVALID',
-          message:
-            'Wallet signature verification failed. Sign the exact challenge message.',
-          status: 401,
-          retryable: true,
-        });
       }
 
       if (!isSolanaReady()) {

@@ -5,6 +5,8 @@ import {
   PublicKey,
 } from '@solana/web3.js';
 import bs58 from 'bs58';
+import { SolanaServiceError } from './errors';
+import { DEVNET_GENESIS_HASH } from './types';
 
 export type SolanaConfigStatus = {
   cluster: string;
@@ -53,6 +55,9 @@ function parseTreasurySecret(secret: string): Keypair {
   }
   try {
     const bytes = bs58.decode(secret);
+    if (bytes.length !== 64) {
+      throw new Error('invalid length');
+    }
     return Keypair.fromSecretKey(bytes);
   } catch {
     throw new Error('DEMO_TREASURY_SECRET_KEY is not a valid base58 secret key');
@@ -119,6 +124,10 @@ export function resolveSolanaConfig(): {
     } catch (err) {
       reasons.push(err instanceof Error ? err.message : 'Invalid host public key');
     }
+  }
+
+  if (treasury && hostPublicKey && treasury.publicKey.equals(hostPublicKey)) {
+    reasons.push('Treasury and host public keys must be different');
   }
 
   const status: SolanaConfigStatus = {
@@ -216,7 +225,7 @@ export async function getHealthSolanaFields(): Promise<{
 
   if (cachedResolved && cachedConnection) {
     try {
-      await cachedConnection.getLatestBlockhash('confirmed');
+      await assertConnectionIsDevnet(cachedConnection);
       treasuryBalanceSol = await getTreasuryBalanceSol();
     } catch {
       solanaReady = false;
@@ -236,6 +245,32 @@ export async function getHealthSolanaFields(): Promise<{
     treasuryBalanceSol,
     solanaReady,
   };
+}
+
+export async function assertConnectionIsDevnet(
+  connection: Connection,
+): Promise<void> {
+  let genesisHash: string;
+  try {
+    genesisHash = await connection.getGenesisHash();
+  } catch (cause) {
+    throw new SolanaServiceError({
+      code: 'SOLANA_RPC_UNAVAILABLE',
+      message: 'Unable to read the configured Solana RPC genesis hash',
+      messageKa: 'The configured Solana RPC is unavailable.',
+      retryable: true,
+      cause,
+    });
+  }
+
+  if (genesisHash !== DEVNET_GENESIS_HASH) {
+    throw new SolanaServiceError({
+      code: 'SOLANA_CLUSTER_FORBIDDEN',
+      message: `RPC genesis hash ${genesisHash} is not Solana devnet`,
+      messageKa: 'The configured Solana RPC is not devnet.',
+      retryable: false,
+    });
+  }
 }
 
 export function getLastSolanaStatus(): SolanaConfigStatus | null {

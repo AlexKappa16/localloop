@@ -1,7 +1,7 @@
 import {
   PublicKey,
   Transaction,
-  TransactionInstruction,
+  type TransactionInstruction,
 } from '@solana/web3.js';
 import {
   explorerTxUrl,
@@ -10,15 +10,18 @@ import {
 import { ids } from '../../shared/ids';
 import type { ChainTransaction } from '../../shared/types';
 import {
+  assertConnectionIsDevnet,
   getSolanaConnection,
   getTreasuryKeypair,
   isSolanaReady,
 } from './client';
+import {
+  createSignedMemoInstruction,
+  MEMO_PROGRAM_ID,
+} from './memo';
 
 /** SPL Memo program (memo-only instruction, no token transfer). */
-export const MEMO_PROGRAM_ID = new PublicKey(
-  'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr',
-);
+export { MEMO_PROGRAM_ID };
 
 export type FundingProofResult = {
   transaction: ChainTransaction;
@@ -28,11 +31,7 @@ export function createMemoInstruction(
   payer: PublicKey,
   memo: string,
 ): TransactionInstruction {
-  return new TransactionInstruction({
-    keys: [{ pubkey: payer, isSigner: true, isWritable: false }],
-    programId: MEMO_PROGRAM_ID,
-    data: Buffer.from(memo, 'utf8'),
-  });
+  return createSignedMemoInstruction(memo, payer);
 }
 
 /**
@@ -54,6 +53,7 @@ export async function submitFundingProof(options?: {
   const memo = options?.memo ?? FUNDING_PROOF_MEMO;
   const campaignId = options?.campaignId ?? ids.campaign;
 
+  await assertConnectionIsDevnet(connection);
   const { blockhash, lastValidBlockHeight } =
     await connection.getLatestBlockhash('confirmed');
 

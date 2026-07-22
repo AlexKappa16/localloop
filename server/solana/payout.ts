@@ -11,6 +11,7 @@ import {
 import { ids } from '../../shared/ids';
 import type { ChainTransaction } from '../../shared/types';
 import {
+  assertConnectionIsDevnet,
   getHostPublicKey,
   getSolanaConnection,
   getTreasuryKeypair,
@@ -87,6 +88,7 @@ export async function submitHostPayout(options: {
     const host = getHostPublicKey();
     const lamports = Math.round(amountSol * LAMPORTS_PER_SOL);
 
+    await assertConnectionIsDevnet(connection);
     const { blockhash, lastValidBlockHeight } =
       await connection.getLatestBlockhash('confirmed');
 

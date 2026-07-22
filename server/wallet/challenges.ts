@@ -1,6 +1,8 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
+import { PublicKey } from '@solana/web3.js';
 import { fundingChallengeMessage } from '../../shared/contracts';
 import { ids } from '../../shared/ids';
+import { WalletAuthorizationError } from './errors';
 
 const CHALLENGE_TTL_MS = 5 * 60 * 1000;
 
@@ -14,100 +16,132 @@ export type WalletChallengeRecord = {
   consumed: boolean;
 };
 
-const challenges = new Map<string, WalletChallengeRecord>();
+export class FundingChallengeStore {
+  private readonly challenges = new Map<string, WalletChallengeRecord>();
 
-function newId(): string {
-  return randomBytes(16).toString('hex');
-}
+  issue(walletAddressInput: string, now = new Date()): {
+    challengeId: string;
+    expiresAt: string;
+    message: string;
+  } {
+    const walletAddress = normalizeWalletAddress(walletAddressInput);
+    const challengeId = randomUUID();
+    const nonce = randomBytes(16).toString('hex');
+    const expiresAt = new Date(now.getTime() + CHALLENGE_TTL_MS).toISOString();
+    const message = fundingChallengeMessage({
+      walletAddress,
+      nonce,
+      expiresAt,
+    });
 
-function newNonce(): string {
-  return createHash('sha256').update(randomBytes(32)).digest('hex').slice(0, 32);
-}
-
-export function clearChallenges(): void {
-  challenges.clear();
-}
-
-export function issueFundingChallenge(walletAddress: string): {
-  challengeId: string;
-  expiresAt: string;
-  message: string;
-} {
-  const trimmed = walletAddress.trim();
-  if (!trimmed) {
-    throw new Error('walletAddress is required');
+    this.challenges.set(challengeId, {
+      challengeId,
+      walletAddress,
+      campaignId: ids.campaign,
+      nonce,
+      message,
+      expiresAt,
+      consumed: false,
+    });
+    this.removeExpired(now);
+    return { challengeId, expiresAt, message };
   }
 
-  const challengeId = newId();
-  const nonce = newNonce();
-  const expiresAt = new Date(Date.now() + CHALLENGE_TTL_MS).toISOString();
-  const message = fundingChallengeMessage({
-    walletAddress: trimmed,
-    nonce,
-    expiresAt,
-  });
+  consume(
+    challengeId: string,
+    walletAddressInput: string,
+    campaignId: string = ids.campaign,
+    now = new Date(),
+  ): WalletChallengeRecord {
+    const record = this.challenges.get(challengeId);
+    if (!record) {
+      throw new WalletAuthorizationError({
+        code: 'CHALLENGE_NOT_FOUND',
+        message: 'Funding challenge does not exist or was already consumed',
+        retryable: true,
+      });
+    }
 
-  const record: WalletChallengeRecord = {
-    challengeId,
-    walletAddress: trimmed,
-    campaignId: ids.campaign,
-    nonce,
-    message,
-    expiresAt,
-    consumed: false,
-  };
-  challenges.set(challengeId, record);
+    const walletAddress = normalizeWalletAddress(walletAddressInput);
+    if (record.walletAddress !== walletAddress) {
+      throw new WalletAuthorizationError({
+        code: 'CHALLENGE_WALLET_MISMATCH',
+        message: 'Funding challenge belongs to another wallet',
+        retryable: false,
+      });
+    }
+    if (record.campaignId !== campaignId) {
+      throw new WalletAuthorizationError({
+        code: 'CHALLENGE_CAMPAIGN_MISMATCH',
+        message: 'Funding challenge belongs to another campaign',
+        retryable: false,
+      });
+    }
 
-  return {
-    challengeId,
-    expiresAt,
-    message,
-  };
+    this.challenges.delete(challengeId);
+    if (Date.parse(record.expiresAt) <= now.getTime()) {
+      throw new WalletAuthorizationError({
+        code: 'CHALLENGE_EXPIRED',
+        message: 'Funding challenge has expired',
+        retryable: true,
+      });
+    }
+
+    return { ...record, consumed: true };
+  }
+
+  peek(challengeId: string): WalletChallengeRecord | undefined {
+    return this.challenges.get(challengeId);
+  }
+
+  clear(): void {
+    this.challenges.clear();
+  }
+
+  private removeExpired(now: Date): void {
+    for (const [id, challenge] of this.challenges) {
+      if (Date.parse(challenge.expiresAt) <= now.getTime()) {
+        this.challenges.delete(id);
+      }
+    }
+  }
 }
 
-export function peekChallenge(
-  challengeId: string,
-): WalletChallengeRecord | undefined {
-  return challenges.get(challengeId);
+export const fundingChallengeStore = new FundingChallengeStore();
+
+export function clearChallenges(): void {
+  fundingChallengeStore.clear();
 }
 
-/**
- * Atomically consume a challenge after successful signature verification.
- * Rejects missing, expired, wrong-wallet, wrong-campaign, and replayed challenges.
- */
+export function issueFundingChallenge(walletAddress: string) {
+  return fundingChallengeStore.issue(walletAddress);
+}
+
+export function peekChallenge(challengeId: string) {
+  return fundingChallengeStore.peek(challengeId);
+}
+
 export function consumeChallenge(options: {
   challengeId: string;
   walletAddress: string;
   campaignId: string;
 }): WalletChallengeRecord {
-  const record = challenges.get(options.challengeId);
-  if (!record) {
-    throw Object.assign(new Error('Challenge not found'), {
-      code: 'CHALLENGE_NOT_FOUND',
-    });
-  }
-  if (record.consumed) {
-    throw Object.assign(new Error('Challenge already used'), {
-      code: 'CHALLENGE_REPLAY',
-    });
-  }
-  if (Date.parse(record.expiresAt) <= Date.now()) {
-    throw Object.assign(new Error('Challenge expired'), {
-      code: 'CHALLENGE_EXPIRED',
-    });
-  }
-  if (record.walletAddress !== options.walletAddress.trim()) {
-    throw Object.assign(new Error('Challenge wallet mismatch'), {
-      code: 'CHALLENGE_WALLET_MISMATCH',
-    });
-  }
-  if (record.campaignId !== options.campaignId) {
-    throw Object.assign(new Error('Challenge campaign mismatch'), {
-      code: 'CHALLENGE_CAMPAIGN_MISMATCH',
-    });
-  }
+  return fundingChallengeStore.consume(
+    options.challengeId,
+    options.walletAddress,
+    options.campaignId,
+  );
+}
 
-  record.consumed = true;
-  challenges.set(record.challengeId, record);
-  return record;
+function normalizeWalletAddress(value: string): string {
+  try {
+    return new PublicKey(value).toBase58();
+  } catch (cause) {
+    throw new WalletAuthorizationError({
+      code: 'WALLET_ADDRESS_INVALID',
+      message: 'Wallet address is not a valid Solana public key',
+      retryable: false,
+      cause,
+    });
+  }
 }

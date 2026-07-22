@@ -9,7 +9,9 @@
     "build": "npm run typecheck && vite build",
     "start": "tsx server/index.ts",
     "solana:check": "tsx server/scripts/solana-check.ts",
-    "test": "tsx --test server/**/*.test.ts shared/**/*.test.ts"
+    "test": "tsx --test server/**/*.test.ts shared/**/*.test.ts",
+    "test:solana": "tsx --test server/solana/*.test.ts",
+    "test:wallet": "tsx --test server/wallet/*.test.ts"
   },
   "dependencies": {
     "@solana/wallet-adapter-base": "^0.9.27",

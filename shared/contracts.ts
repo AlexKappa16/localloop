@@ -9,7 +9,7 @@ export type MutationResponse<T = unknown> = {
 export type ApiErrorBody = {
   error: {
     code: string;
-    messageKa: string;
+    message: string;
     retryable: boolean;
     details?: Record<string, unknown>;
   };

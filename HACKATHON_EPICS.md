@@ -463,14 +463,14 @@ Errors:
 type ApiError = {
   error: {
     code: string;
-    messageKa: string;
+    message: string;
     retryable: boolean;
     details?: Record<string, unknown>;
   };
 };
 ```
 
-Never return a private key, raw server exception, or English-only UI error.
+Never return a private key, raw server exception, or opaque internal error text.
 
 ### Required endpoints
 

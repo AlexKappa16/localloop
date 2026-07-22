@@ -45,7 +45,7 @@ export function applyFundingProofConfirmed(
   if (proof.type !== 'funding_proof' || proof.status !== 'confirmed') {
     throw new AppError({
       code: 'INVALID_FUNDING_PROOF',
-      messageKa: 'Funding proof must be a confirmed funding_proof transaction.',
+      message: 'Funding proof must be a confirmed funding_proof transaction.',
       status: 400,
     });
   }
@@ -55,7 +55,7 @@ export function applyFundingProofConfirmed(
     if (!campaign) {
       throw new AppError({
         code: 'CAMPAIGN_NOT_FOUND',
-        messageKa: 'Campaign not found.',
+        message: 'Campaign not found.',
         status: 404,
       });
     }
@@ -77,14 +77,14 @@ export function approveDeal(dealId: string): DemoState {
     if (!deal) {
       throw new AppError({
         code: 'DEAL_NOT_FOUND',
-        messageKa: 'Deal not found.',
+        message: 'Deal not found.',
         status: 404,
       });
     }
     if (deal.mocked) {
       throw new AppError({
         code: 'DEAL_MOCKED',
-        messageKa: 'This mocked deal cannot be approved in the live demo path.',
+        message: 'This mocked deal cannot be approved in the live demo path.',
         status: 400,
       });
     }
@@ -94,7 +94,7 @@ export function approveDeal(dealId: string): DemoState {
     if (deal.status !== 'proposed') {
       throw new AppError({
         code: 'DEAL_INVALID_STATUS',
-        messageKa: 'Only a proposed deal can be approved.',
+        message: 'Only a proposed deal can be approved.',
         status: 409,
       });
     }
@@ -103,7 +103,7 @@ export function approveDeal(dealId: string): DemoState {
     if (!campaign) {
       throw new AppError({
         code: 'CAMPAIGN_NOT_FOUND',
-        messageKa: 'Campaign not found.',
+        message: 'Campaign not found.',
         status: 404,
       });
     }
@@ -113,7 +113,7 @@ export function approveDeal(dealId: string): DemoState {
     ) {
       throw new AppError({
         code: 'CAMPAIGN_NOT_FUNDED',
-        messageKa:
+        message:
           'Approve the deal only after the campaign is simulated-funded.',
         status: 409,
         retryable: false,
@@ -132,14 +132,14 @@ export function verifyVisit(dealId: string, customerId: string): DemoState {
     if (!deal) {
       throw new AppError({
         code: 'DEAL_NOT_FOUND',
-        messageKa: 'Deal not found.',
+        message: 'Deal not found.',
         status: 404,
       });
     }
     if (deal.status !== 'active') {
       throw new AppError({
         code: 'DEAL_NOT_ACTIVE',
-        messageKa: 'Visits can only be verified on an active deal.',
+        message: 'Visits can only be verified on an active deal.',
         status: 409,
       });
     }
@@ -150,7 +150,7 @@ export function verifyVisit(dealId: string, customerId: string): DemoState {
     if (!claim) {
       throw new AppError({
         code: 'CLAIM_NOT_FOUND',
-        messageKa: 'Claim not found for this customer and deal.',
+        message: 'Claim not found for this customer and deal.',
         status: 404,
       });
     }
@@ -158,7 +158,7 @@ export function verifyVisit(dealId: string, customerId: string): DemoState {
     if (claim.verifiedVisits >= claim.requiredVisits) {
       throw new AppError({
         code: 'VISIT_LIMIT_REACHED',
-        messageKa: 'All required visits are already verified.',
+        message: 'All required visits are already verified.',
         status: 409,
       });
     }
@@ -189,7 +189,7 @@ export function requestRedemption(claimId: string): DemoState {
     if (!claim) {
       throw new AppError({
         code: 'CLAIM_NOT_FOUND',
-        messageKa: 'Claim not found.',
+        message: 'Claim not found.',
         status: 404,
       });
     }
@@ -199,7 +199,7 @@ export function requestRedemption(claimId: string): DemoState {
     if (claim.status !== 'unlocked') {
       throw new AppError({
         code: 'CLAIM_NOT_UNLOCKED',
-        messageKa: 'Redemption can only be requested for an unlocked claim.',
+        message: 'Redemption can only be requested for an unlocked claim.',
         status: 409,
       });
     }
@@ -226,7 +226,7 @@ export function beginValidation(claimId: string): {
   if (!claim) {
     throw new AppError({
       code: 'CLAIM_NOT_FOUND',
-      messageKa: 'Claim not found.',
+      message: 'Claim not found.',
       status: 404,
     });
   }
@@ -235,7 +235,7 @@ export function beginValidation(claimId: string): {
   if (!payout) {
     throw new AppError({
       code: 'PAYOUT_NOT_FOUND',
-      messageKa: 'Payout record not found.',
+      message: 'Payout record not found.',
       status: 404,
     });
   }
@@ -250,7 +250,7 @@ export function beginValidation(claimId: string): {
   if (claim.status !== 'redemption_requested' && claim.status !== 'redeemed') {
     throw new AppError({
       code: 'CLAIM_NOT_REQUESTED',
-      messageKa: 'Validate only after the customer requests redemption.',
+      message: 'Validate only after the customer requests redemption.',
       status: 409,
     });
   }
@@ -275,7 +275,7 @@ export function completeHostPayout(
     if (!claim || !payout) {
       throw new AppError({
         code: 'CLAIM_NOT_FOUND',
-        messageKa: 'Claim or payout not found.',
+        message: 'Claim or payout not found.',
         status: 404,
       });
     }
@@ -300,7 +300,7 @@ export function failHostPayout(claimId: string): DemoState {
     if (!payout || !claim) {
       throw new AppError({
         code: 'PAYOUT_NOT_FOUND',
-        messageKa: 'Payout not found.',
+        message: 'Payout not found.',
         status: 404,
       });
     }

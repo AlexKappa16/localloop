@@ -130,6 +130,10 @@ demo routes.
 - Wallet connection, message signing, funding proof, and payout are visibly
   marked mock interactions. Mock receipts have no Explorer links and must never
   be presented as blockchain transactions.
+- A mock business sign-in path can open a create-campaign screen where the
+  advertiser enters perks, features, and deal terms, connects a mock wallet,
+  and deposits a simulated SOL campaign budget before returning to the
+  advertiser workspace.
 - It rehearses the same ordered happy path and budget change as the final demo,
   while TSRE Gym remains a presentation-only proposed deal.
 - The production demo still requires server-authoritative state, real cross-tab

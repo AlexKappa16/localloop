@@ -306,6 +306,9 @@ Prototype boundaries:
   `redeemed`, payout `paid`, and 0.045 SOL remaining.
 - Label every wallet, signature, funding, payout, and receipt interaction as
   mock. Do not fabricate or link to Solana Explorer transactions.
+- Allow a mock business sign-in → create-campaign path that collects perks,
+  features, and deal fields, connects a mock wallet, and deposits a simulated
+  SOL budget before returning to the advertiser workspace.
 - Keep the TSRE Gym proposed card visible, but do not add a TSRE E2E flow.
 - Treat this route as rehearsal UI only. It does not satisfy LL-102 or LL-105
   acceptance criteria and must not be reused as a client-side authoritative

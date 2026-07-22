@@ -17,6 +17,7 @@ export type PreviewAction =
   | { type: 'request_redemption' }
   | { type: 'validate_redemption' }
   | { type: 'complete_payout' }
+  | { type: 'create_campaign_complete' }
   | { type: 'reset' };
 
 export interface PreviewReceipt {
@@ -102,6 +103,23 @@ export function previewReducer(
           memo:
             'LocalLoop|proof|simulate-funding|campaign:magnolia-develop-the-night',
         },
+      });
+    case 'create_campaign_complete':
+      return withHistory(state, 'advertiser', en.preview.historyFund, {
+        activePersona: 'advertiser',
+        walletConnected: true,
+        campaignStatus:
+          state.campaignStatus === 'draft'
+            ? 'simulated_funded'
+            : state.campaignStatus,
+        fundingReceipt:
+          state.fundingReceipt ??
+          ({
+            type: 'funding',
+            reference: 'PREVIEW-FUNDING-001',
+            memo:
+              'LocalLoop|proof|simulate-funding|campaign:magnolia-develop-the-night',
+          } satisfies PreviewReceipt),
       });
     case 'approve_deal':
       if (

@@ -1,0 +1,505 @@
+# LocalLoop — Coding Agent Handover
+
+## Objective
+
+Build a polished, technically credible hackathon demo of LocalLoop: a local B2B
+rewards network in which an advertiser creates a campaign, nearby host
+businesses help customers unlock rewards, and a verified redemption triggers a
+host payout.
+
+This is a new demo application. Do not assume an existing proof of concept,
+legacy component structure, or pre-existing state model. Inspect the repository
+before editing, then implement the architecture defined here and in
+`HACKATHON_EPICS.md`.
+
+The technical centerpiece is Solana integration without moving any funds from
+the connected advertiser wallet:
+
+- The advertiser wallet connects and signs a plaintext authorization only.
+- Campaign funding is an explicitly simulated application ledger action.
+- A server-controlled wallet records a real proof transaction on Solana devnet.
+- A server-controlled devnet wallet pays faucet-issued devnet SOL to the host
+  demo wallet after redemption.
+- The UI displays genuine Solana Explorer receipts.
+
+## Core demo story
+
+Magnolia Film Lab runs the fictional campaign **„გაამჟღავნე ღამე“**
+(“Develop the Night”) with nearby host Camora.
+
+```text
+Magnolia connects a wallet and signs a no-cost funding authorization
+→ LocalLoop marks the 0.05 SOL campaign budget as simulated funding
+→ A server demo wallet records a real funding-proof memo on devnet
+→ Camora approves the partner deal
+→ Nino completes „Camora-ში 3 დადასტურებული ვიზიტი“
+→ Nino unlocks the Magnolia reward
+→ Nino requests redemption at Magnolia
+→ Magnolia validates the redemption
+→ The server sends 0.005 faucet-issued devnet SOL to Camora’s demo wallet
+→ All three views update live and display the Explorer receipt
+```
+
+The reward is:
+
+> 10 ₾ ფასდაკლება 40 ₾-ზე მეტი ღირებულების ფირის გამჟღავნებასა და სკანირებაზე
+
+`TSRE Gym` is the second, mocked host deal. It demonstrates that one advertiser
+campaign can contain several host relationships with distinct terms. Only the
+Camora path must work end to end.
+
+Magnolia Film Lab and Camora (House of Camora) are real neighboring Tbilisi
+businesses at 8 Egnate Ninoshvili Street. Magnolia is a film lab and analogue
+photography retailer; Camora is a barbershop by day and a bar/live-music venue
+by night. The partnership, campaign, reward, and transactions are fictional
+demo data.
+
+Reference context: [Magnolia Film Lab](https://magnoliafilmlab.com/),
+[Magnolia’s Georgian FAQ](https://magnoliafilmlab.com/faq/), and
+[Fabrika’s House of Camora event listing](https://fabrikatbilisi.com/event/deadpilot-cmr/).
+
+## Product model: views are not permanent business types
+
+The app has three task-oriented views:
+
+1. Customer view: visits, reward progress, claim, and redemption request.
+2. Advertiser view: campaigns, simulated budget, partner deals, validation, and
+   transaction receipts.
+3. Host view: incoming deals, approval, visit verification, and payout status.
+
+Customer is an actor type. Advertiser and host are capabilities of a business,
+not mutually exclusive business categories. The same business may advertise
+one campaign and host a deal for another campaign.
+
+```text
+Campaign.advertiserBusinessId → business paying for customer acquisition
+Deal.hostBusinessId           → business performing the host requirement
+```
+
+Every business has `capabilities: ('advertiser' | 'host')[]`. The business
+console exposes an advertiser/host workspace switcher only when the selected
+business supports both capabilities.
+
+Keep two navigation concepts visually distinct:
+
+- **Demo persona switcher:** lets judges jump between Nino, Magnolia, and
+  Camora. This is presentation tooling and must be labelled as demo mode.
+- **Business workspace switcher:** changes between advertiser and host tasks for
+  the same business. This is product navigation.
+
+The seeded walkthrough defaults are:
+
+```text
+Nino             → customer view
+Magnolia Film Lab → advertiser workspace
+Camora            → host workspace
+```
+
+## Routes
+
+Canonical routes:
+
+```text
+/
+/customer/:customerId
+/business/:businessId/advertiser
+/business/:businessId/host
+```
+
+Demo aliases:
+
+```text
+/customer   → /customer/nino
+/advertiser → /business/magnolia-film-lab/advertiser
+/host       → /business/camora/host
+```
+
+`/` is a polished demo launcher, not a fourth product workspace.
+
+## Architecture
+
+Build one TypeScript repository with two runtime layers:
+
+```text
+React + Vite frontend
+        ↓ REST + Server-Sent Events
+Node + Express API
+        ├─ server-owned in-memory demo state
+        ├─ validated domain transitions
+        ├─ Ed25519 wallet-signature verification
+        └─ server-only Solana devnet signer
+                    ↓
+              Solana devnet
+```
+
+### Frontend responsibilities
+
+- Render the three views and demo launcher.
+- Render Georgian-first product copy.
+- Connect a Wallet Standard-compatible Solana wallet.
+- Request `signMessage` only; never request a transaction signature.
+- Fetch canonical state from the API.
+- Send user intents through REST mutations.
+- Subscribe to `/api/events` with native `EventSource`.
+- Refetch state after reconnecting or receiving a revision event.
+- Show loading, success, empty, and recoverable error states.
+- Display real devnet Explorer links returned by the server.
+
+### Backend responsibilities
+
+- Own the canonical demo state in memory.
+- Seed and reset all demo entities.
+- Validate every state transition and reject invalid or duplicate actions.
+- Issue one-time wallet challenges and verify signed messages.
+- Broadcast monotonically increasing state revisions through SSE.
+- Submit and confirm the server-funded devnet proof transaction.
+- Submit and confirm the Camora devnet payout.
+- Keep all private key material outside the browser bundle.
+- Serve the built frontend in production.
+
+### Persistence and infrastructure decisions
+
+- No database for the hackathon demo.
+- No Docker or Docker Compose by default.
+- No authentication or production authorization system.
+- No blockchain smart contract or custom Anchor program.
+- Backend restart resets in-memory state; this limitation is acceptable and must
+  not be disguised as production persistence.
+- Technical ambition should go into the state machine, synchronized views,
+  signature verification, Solana receipts, failure handling, and polish—not
+  infrastructure that the demo does not need.
+
+## Runtime contract
+
+Required commands:
+
+```bash
+npm install
+npm run dev
+npm run typecheck
+npm run build
+npm start
+```
+
+Use Node.js 20 or newer. The canonical script behavior is:
+
+```json
+{
+  "dev": "concurrently -k \"vite\" \"tsx watch server/index.ts\"",
+  "typecheck": "tsc --noEmit",
+  "build": "npm run typecheck && vite build",
+  "start": "tsx server/index.ts"
+}
+```
+
+Equivalent scripts are acceptable only if they preserve the same one-command
+development flow, full client/server typecheck, production frontend build, and
+single-process start behavior. Keep `tsx` available in production if `start`
+depends on it.
+
+Development topology:
+
+```text
+Vite frontend: http://localhost:5173
+Express API:   http://localhost:3001
+```
+
+Vite proxies `/api` to Express. `npm run dev` starts both processes. After
+`npm run build`, Express serves the compiled frontend so deployment uses one
+process.
+
+## Target repository structure
+
+```text
+index.html
+package.json
+tsconfig.json
+vite.config.ts
+.env.example
+src/
+  main.tsx
+  app/
+    App.tsx
+    router.tsx
+    DemoStateProvider.tsx
+  components/
+  features/
+    customer/
+    advertiser/
+    host/
+  lib/
+    api.ts
+    events.ts
+    wallet.ts
+  copy/
+    ka.ts
+  styles/
+server/
+  index.ts
+  app.ts
+  api/
+  domain/
+    seed.ts
+    store.ts
+    transitions.ts
+  solana/
+    client.ts
+    fundingProof.ts
+    payout.ts
+  wallet/
+    challenges.ts
+    verifySignature.ts
+shared/
+  contracts.ts
+  ids.ts
+  types.ts
+```
+
+The exact number of files may change for a clear reason, but preserve these
+boundaries: views, shared contracts, server domain logic, wallet verification,
+and server-only Solana code.
+
+## Canonical domain state
+
+```text
+Business capabilities: advertiser | host
+Campaign status: draft | simulated_funded | live | completed
+Deal status: proposed | active | completed
+Claim status: locked | unlocked | redemption_requested | redeemed
+Payout status: not_ready | pending | processing | paid | failed
+Transaction type: funding_proof | host_payout
+```
+
+Keep claim and payout state separate. A deal does not become `paid`; its payout
+record does. Internal enum values remain English code identifiers and render as
+Georgian labels in the UI.
+
+Core transition sequence:
+
+```text
+signed funding authorization
+→ confirmed server-funded devnet proof
+→ campaign simulated_funded
+→ Camora approves deal
+→ deal active and campaign live
+→ three verified visits
+→ claim unlocked
+→ customer requests redemption
+→ claim redemption_requested and payout pending
+→ advertiser validates
+→ claim redeemed and payout processing
+→ confirmed server-funded devnet payout
+→ payout paid and budget ledger reduced by 0.005
+```
+
+## Seeded data
+
+```text
+Businesses
+- Magnolia Film Lab: advertiser + host; default advertiser workspace
+- Camora: advertiser + host; default host workspace
+- TSRE Gym: host
+
+Campaign
+- ID: magnolia-develop-the-night
+- Name: „გაამჟღავნე ღამე“
+- Advertiser: Magnolia Film Lab
+- Simulated budget: 0.05 SOL
+
+Camora deal
+- ID: camora-deal
+- Requirement: Camora-ში 3 დადასტურებული ვიზიტი
+- Reward: 10 ₾ ფასდაკლება 40 ₾-ზე მეტი ღირებულების ფირის გამჟღავნებასა და სკანირებაზე
+- Payout: 0.005 faucet-issued devnet SOL
+- Maximum redemptions: 10
+
+TSRE Gym deal
+- ID: tsre-gym-deal
+- Payout: 0.007 faucet-issued devnet SOL
+- Maximum redemptions: 5
+- Proposed and mocked
+
+Customer
+- ID: nino
+- Claim ID: LL-NINO-001
+- Initial verified visits: 1 of 3
+```
+
+Budget values are a simulated ledger:
+
+```text
+paid = sum of confirmed host payouts
+remaining = total simulated budget - paid
+reserved = active-deal payout capacity, capped by remaining
+```
+
+TSRE Gym is proposed, so it does not reserve budget. When the Camora deal is
+active, its 10 × 0.005 SOL capacity reserves the 0.05 SOL simulated budget. After
+one payout, paid is 0.005 and remaining/reserved are both 0.045 SOL.
+
+## API and live-update summary
+
+The detailed request and response contracts live in `HACKATHON_EPICS.md` and
+`shared/contracts.ts`. At minimum implement:
+
+```text
+GET  /api/health
+GET  /api/state
+GET  /api/events
+POST /api/demo/reset
+POST /api/wallet/challenge
+POST /api/campaigns/:campaignId/authorize-funding
+POST /api/deals/:dealId/approve
+POST /api/deals/:dealId/visits
+POST /api/claims/:claimId/request-redemption
+POST /api/claims/:claimId/validate
+```
+
+All mutations return the new state revision and a structured error on failure.
+The client must update from server responses/SSE rather than inventing
+authoritative state locally.
+
+## Solana and wallet safety contract
+
+The connected advertiser wallet must never lose funds—not even devnet SOL.
+
+- The frontend may call wallet connect, disconnect, and `signMessage`.
+- The frontend must never call `sendTransaction`, `signTransaction`, or
+  `signAllTransactions`.
+- Never construct a transfer with the connected wallet as source or fee payer.
+- There is no advertiser-wallet transfer fallback.
+- Campaign funding is a simulated ledger action authorized by a signed message.
+- Only the server demo wallet submits devnet transactions and pays fees.
+- The server must refuse to start its Solana service unless the configured
+  cluster is exactly `devnet`.
+- The demo wallet contains faucet-issued devnet SOL only.
+- The server private key must never appear in source, logs, API responses, or a
+  `VITE_*` variable.
+- Show `?cluster=devnet` in every Explorer link.
+- Label funding as simulated and on-chain activity as devnet demo activity.
+- Never describe the system as production escrow or real advertiser funding.
+
+Funding proof memo:
+
+```text
+LocalLoop|proof|simulate-funding|campaign:magnolia-develop-the-night
+```
+
+Payout memo:
+
+```text
+LocalLoop|payout|campaign:magnolia-develop-the-night|deal:camora-deal|claim:LL-NINO-001
+```
+
+Implementation references: [Solana clusters and devnet](https://solana.com/docs/core),
+[official devnet faucet](https://faucet.solana.com/), and
+[Solana memo payments](https://solana.com/docs/payments/send-payments/payment-with-memo).
+
+## Environment contract
+
+```bash
+PORT=3001
+SOLANA_CLUSTER=devnet
+SOLANA_RPC_URL=https://api.devnet.solana.com
+DEMO_TREASURY_SECRET_KEY=server_only_base58_secret
+DEMO_HOST_PUBLIC_KEY=replace_with_camora_demo_address
+VITE_SOLANA_CLUSTER=devnet
+VITE_SOLANA_RPC_URL=https://api.devnet.solana.com
+```
+
+Only non-secret browser configuration may use `VITE_*`. Commit `.env.example`,
+never `.env` or generated keypairs.
+
+## Language and product copy
+
+All app-owned user-facing copy must be natural Georgian whenever Georgian is
+appropriate: navigation, headings, buttons, helper text, wallet guidance,
+statuses, loading/error states, reward terms, and demo controls.
+
+Keep official business names, `LocalLoop`, addresses, wallet addresses,
+transaction signatures, IDs, `SOL`, `devnet`, and URLs in their conventional
+form. Third-party wallet dialogs and Solana Explorer are outside the app’s
+localization scope.
+
+Set `<html lang="ka">`. Use an explicitly loaded Georgian-capable font for
+Georgian text; never rely on accidental browser fallback.
+
+Canonical copy includes:
+
+```text
+Campaign: „გაამჟღავნე ღამე“
+Fund action: „კამპანიის სიმულირებული დაფინანსება“
+Verify visit: „Camora-ს ვიზიტის დადასტურება“
+Redeem request: „ჯილდოს გამოყენების მოთხოვნა“
+Validate redemption: „გამოყენების დადასტურება“
+Funding label: „სიმულირებული ბიუჯეტი“
+Settlement label: „სატესტო ანგარიშსწორება Solana devnet-ზე“
+Reset: „დემოს თავიდან დაწყება“
+Claim statuses: „ჩაკეტილია“ → „გახსნილია“ → „გამოყენება მოთხოვნილია“ → „გამოყენებულია“
+Payout statuses: „ჯერ არ არის მზად“ → „მოლოდინშია“ → „მუშავდება“ → „გადახდილია“
+```
+
+## Design and brand direction
+
+The default direction is modern, welcoming neobrutalism inspired by a friendly
+local print poster rather than a generic SaaS or crypto dashboard.
+
+```text
+Primary: welcoming deep green
+Background: warm off-white paper
+Accents: coral and yellow, used sparingly
+Georgian UI: Noto Sans Georgian
+Latin display/brand text: Space Grotesk
+Latin technical metadata: IBM Plex Mono
+```
+
+Default characteristics:
+
+- Mobile-first at 375px, responsive through desktop.
+- Strong borders and hard offset shadows.
+- Prefer flat colors and clear hierarchy.
+- Minimum 44px touch targets.
+- Accessible contrast, focus, loading, and disabled states.
+
+This is a default, not a ban on creative exploration. Gradients,
+glassmorphism, glow, blur, softer shadows, rounded forms, illustration, motion,
+or other styles may be used when the user or an approved design prompt
+explicitly requests them. Do not add them automatically as generic polish.
+
+## Coordination and documentation contract
+
+- Create `AGENTS.md` and `CLAUDE.md` before feature work.
+- `AGENTS.md` is the detailed repository rule set; `CLAUDE.md` is its concise
+  mirror.
+- Both must include the architecture, dual-capability business model,
+  Georgian-first copy contract, design-default/creative-freedom rule, Solana
+  wallet safety rules, and required validation commands.
+- Keep this file synchronized with `HACKATHON_EPICS.md`. Changes to routes,
+  state, IDs, copy, design, APIs, or Solana behavior must update both documents.
+- Treat `HACKATHON_EPICS.md` as the detailed implementation contract. Reconcile
+  conflicts before coding rather than guessing.
+- Run `npm run typecheck` and `npm run build` after meaningful integrations.
+- Never commit secrets, `.env`, generated wallets, or `node_modules`.
+
+## Final demo sequence
+
+```text
+1. Open /advertiser as Magnolia Film Lab.
+2. Connect the advertiser wallet and sign the plaintext funding authorization.
+3. Show that the wallet sent no transaction and the campaign has a simulated budget.
+4. Open the real server-funded funding-proof transaction in Solana Explorer.
+5. Open /host as Camora and approve the deal.
+6. Verify Nino’s two remaining visits; show /customer updating live.
+7. Request reward redemption from /customer.
+8. Validate the redemption from Magnolia’s advertiser workspace.
+9. Show payout processing, then Camora’s „გადახდილია“ status.
+10. Open the real server-funded payout transaction in Solana Explorer.
+11. Show the simulated remaining budget reduced by 0.005 SOL.
+12. Use „დემოს თავიდან დაწყება“ and verify every view returns to seeded state.
+```
+
+## Detailed backlog
+
+Read [HACKATHON_EPICS.md](./HACKATHON_EPICS.md) for implementation ownership,
+API contracts, acceptance criteria, test cases, integration order, and fallback
+behavior.

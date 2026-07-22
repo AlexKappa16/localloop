@@ -18,11 +18,17 @@ they will not complete the wallet / funding / payout path.
 **For judging in the browser, use the mocked walkthrough:**
 
 ```text
-/demo-preview
+https://localloop-murex.vercel.app/demo-preview
 ```
+
+(or `/demo-preview` on any deploy of this frontend)
 
 `/demo-preview` is a self-contained frontend prototype of the full Magnolia →
 Camora → Nino story. It does not need Phantom or the API.
+
+**Deployed frontend (static):** [https://localloop-murex.vercel.app](https://localloop-murex.vercel.app)  
+Live Solana routes on that host still need a reachable API + Phantom; prefer
+`/demo-preview` unless you are running the full stack.
 
 **In our demo video we show both:**
 

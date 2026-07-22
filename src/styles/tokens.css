@@ -1,0 +1,25 @@
+:root {
+  --color-bg: #f6f1e8;
+  --color-surface: #fffdf8;
+  --color-ink: #1a2e24;
+  --color-muted: #4d6358;
+  --color-primary: #1f6b4a;
+  --color-primary-ink: #f6f1e8;
+  --color-coral: #e36a5d;
+  --color-yellow: #f0c94d;
+  --color-border: #1a2e24;
+  --color-focus: #1f6b4a;
+  --shadow-hard: 4px 4px 0 var(--color-border);
+  --radius: 6px;
+  --font-georgian: 'Noto Sans Georgian', 'Noto Sans', sans-serif;
+  --font-display: 'Space Grotesk', 'Noto Sans Georgian', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --touch-min: 44px;
+  --max-width: 72rem;
+}

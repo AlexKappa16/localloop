@@ -14,7 +14,7 @@ export function BusinessWorkspaceSwitcher({ businessId, capabilities }: Props) {
   if (!canAdvertiser && !canHost) return null;
 
   return (
-    <div className="switcher" aria-label="Business workspace">
+    <div className="switcher" aria-label={en.businessWorkspace}>
       {canAdvertiser ? (
         <NavLink
           to={`/business/${businessId}/advertiser`}

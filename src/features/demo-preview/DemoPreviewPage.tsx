@@ -2,12 +2,12 @@ import { useMemo, useReducer } from 'react';
 import { ids } from '../../../shared/ids';
 import { StatusBadge } from '../../components/StatusBadge';
 import {
-  campaignStatusKa,
-  claimStatusKa,
-  dealStatusKa,
-  ka,
-  payoutStatusKa,
-} from '../../copy/ka';
+  campaignStatusLabel,
+  claimStatusLabel,
+  dealStatusLabel,
+  en,
+  payoutStatusLabel,
+} from '../../copy/en';
 import {
   getNextStep,
   initialPreviewState,
@@ -18,25 +18,25 @@ import {
 } from './demoPreviewState';
 
 const personaLabels: Record<PreviewPersona, string> = {
-  advertiser: ka.preview.advertiserTab,
-  host: ka.preview.hostTab,
-  customer: ka.preview.customerTab,
+  advertiser: en.preview.advertiserTab,
+  host: en.preview.hostTab,
+  customer: en.preview.customerTab,
 };
 
 const personaShortLabels: Record<PreviewPersona, string> = {
   advertiser: 'Magnolia',
   host: 'Camora',
-  customer: 'ნინო',
+  customer: 'Nino',
 };
 
 function MockReceipt({ receipt }: { receipt: PreviewReceipt }) {
   return (
-    <article className="preview-receipt" aria-label={ka.preview.receipt}>
+    <article className="preview-receipt" aria-label={en.preview.receipt}>
       <div className="preview-receipt__topline">
         <span className="preview-kicker">
           {receipt.type === 'funding'
-            ? ka.preview.fundingProof
-            : ka.preview.payoutProof}
+            ? en.preview.fundingProof
+            : en.preview.payoutProof}
         </span>
         <span className="preview-pill preview-pill--mock">MOCK</span>
       </div>
@@ -47,15 +47,15 @@ function MockReceipt({ receipt }: { receipt: PreviewReceipt }) {
       ) : null}
       <dl className="preview-details">
         <div>
-          <dt>{ka.preview.receiptReference}</dt>
+          <dt>{en.preview.receiptReference}</dt>
           <dd className="mono">{receipt.reference}</dd>
         </div>
         <div>
-          <dt>{ka.preview.receiptMemo}</dt>
+          <dt>{en.preview.receiptMemo}</dt>
           <dd className="mono">{receipt.memo}</dd>
         </div>
       </dl>
-      <p className="preview-fineprint">{ka.preview.noExplorer}</p>
+      <p className="preview-fineprint">{en.preview.noExplorer}</p>
     </article>
   );
 }
@@ -71,21 +71,21 @@ function BudgetStrip({ state }: { state: PreviewState }) {
         : 0;
 
   return (
-    <div className="preview-budget" aria-label={ka.preview.simulatedBudget}>
+    <div className="preview-budget" aria-label={en.preview.simulatedBudget}>
       <div>
-        <span>{ka.preview.simulatedBudget}</span>
+        <span>{en.preview.simulatedBudget}</span>
         <strong>0.050 SOL</strong>
       </div>
       <div>
-        <span>{ka.preview.remainingBudget}</span>
+        <span>{en.preview.remainingBudget}</span>
         <strong>{remaining.toFixed(3)} SOL</strong>
       </div>
       <div>
-        <span>რეზერვი</span>
+        <span>{en.preview.reservedBudget}</span>
         <strong>{reserved.toFixed(3)} SOL</strong>
       </div>
       <div>
-        <span>{ka.preview.paidBudget}</span>
+        <span>{en.preview.paidBudget}</span>
         <strong>{paid.toFixed(3)} SOL</strong>
       </div>
     </div>
@@ -103,9 +103,9 @@ function AdvertiserView({
     <section className="preview-workspace" aria-labelledby="advertiser-title">
       <header className="preview-workspace__header">
         <div>
-          <span className="preview-kicker">{ka.preview.advertiserKicker}</span>
-          <h2 id="advertiser-title">{ka.preview.advertiserTitle}</h2>
-          <p>{ka.preview.advertiserBody}</p>
+          <span className="preview-kicker">{en.preview.advertiserKicker}</span>
+          <h2 id="advertiser-title">{en.preview.advertiserTitle}</h2>
+          <p>{en.preview.advertiserBody}</p>
         </div>
         <StatusBadge kind="campaign" status={state.campaignStatus} />
       </header>
@@ -115,7 +115,7 @@ function AdvertiserView({
       <div className="preview-two-column">
         <article className="preview-card preview-card--green">
           <div className="preview-card__heading">
-            <span className="preview-kicker">{ka.preview.wallet}</span>
+            <span className="preview-kicker">{en.preview.wallet}</span>
             <span
               className={`preview-dot ${
                 state.walletConnected ? 'preview-dot--on' : ''
@@ -125,17 +125,17 @@ function AdvertiserView({
           </div>
           <h3>
             {state.walletConnected
-              ? ka.preview.walletConnected
-              : ka.preview.walletDisconnected}
+              ? en.preview.walletConnected
+              : en.preview.walletDisconnected}
           </h3>
-          <p>{ka.preview.signDisclosure}</p>
+          <p>{en.preview.signDisclosure}</p>
           {!state.walletConnected ? (
             <button
               className="preview-action preview-action--yellow"
               type="button"
               onClick={() => dispatch({ type: 'connect_wallet' })}
             >
-              {ka.preview.connectWallet}
+              {en.preview.connectWallet}
             </button>
           ) : (
             <button
@@ -145,25 +145,23 @@ function AdvertiserView({
               onClick={() => dispatch({ type: 'authorize_funding' })}
             >
               {state.campaignStatus === 'draft'
-                ? ka.preview.signFunding
-                : 'ავტორიზაცია დასრულებულია'}
+                ? en.preview.signFunding
+                : en.preview.authorizationDone}
             </button>
           )}
         </article>
 
         <article className="preview-card">
-          <span className="preview-kicker">{ka.preview.canonicalDeal}</span>
+          <span className="preview-kicker">{en.preview.canonicalDeal}</span>
           <div className="preview-card__title-row">
             <h3>Camora</h3>
             <StatusBadge kind="deal" status={state.dealStatus} />
           </div>
-          <p>Camora-ში 3 დადასტურებული ვიზიტი</p>
-          <strong className="preview-reward">
-            10 ₾ ფასდაკლება ფირის გამჟღავნებასა და სკანირებაზე
-          </strong>
+          <p>{en.preview.camoraRequirement}</p>
+          <strong className="preview-reward">{en.preview.camoraRewardShort}</strong>
           <div className="preview-card__meta">
-            <span>0.005 SOL / გამოყენება</span>
-            <span>მაქს. 10</span>
+            <span>{en.preview.perRedemption}</span>
+            <span>{en.preview.maxRedemptions}</span>
           </div>
           {state.claimStatus === 'redemption_requested' ? (
             <button
@@ -171,7 +169,7 @@ function AdvertiserView({
               type="button"
               onClick={() => dispatch({ type: 'validate_redemption' })}
             >
-              {ka.preview.validate}
+              {en.preview.validate}
             </button>
           ) : null}
           {state.payoutStatus === 'processing' ? (
@@ -180,7 +178,7 @@ function AdvertiserView({
               type="button"
               onClick={() => dispatch({ type: 'complete_payout' })}
             >
-              {ka.preview.completePayout}
+              {en.preview.completePayout}
             </button>
           ) : null}
         </article>
@@ -189,16 +187,16 @@ function AdvertiserView({
       <article className="preview-card preview-card--mock">
         <div className="preview-card__title-row">
           <div>
-            <span className="preview-kicker">{ka.preview.partnerNetwork}</span>
+            <span className="preview-kicker">{en.preview.partnerNetwork}</span>
             <h3>TSRE Gym</h3>
           </div>
           <span className="preview-pill preview-pill--mock">
-            {ka.preview.proposedMock}
+            {en.preview.proposedMock}
           </span>
         </div>
-        <p>{ka.preview.tsreRequirement}</p>
+        <p>{en.preview.tsreRequirement}</p>
         <div className="preview-card__meta">
-          <span>{ka.preview.tsreReward}</span>
+          <span>{en.preview.tsreReward}</span>
           <span>0.007 SOL</span>
         </div>
       </article>
@@ -224,9 +222,9 @@ function HostView({
     <section className="preview-workspace" aria-labelledby="host-title">
       <header className="preview-workspace__header">
         <div>
-          <span className="preview-kicker">{ka.preview.hostKicker}</span>
-          <h2 id="host-title">{ka.preview.hostTitle}</h2>
-          <p>{ka.preview.hostBody}</p>
+          <span className="preview-kicker">{en.preview.hostKicker}</span>
+          <h2 id="host-title">{en.preview.hostTitle}</h2>
+          <p>{en.preview.hostBody}</p>
         </div>
         <StatusBadge kind="payout" status={state.payoutStatus} />
       </header>
@@ -234,10 +232,10 @@ function HostView({
       <div className="preview-two-column preview-two-column--host">
         <article className="preview-card">
           <div className="preview-card__title-row">
-            <h3>„გაამჟღავნე ღამე“</h3>
+            <h3>{en.campaignName}</h3>
             <StatusBadge kind="deal" status={state.dealStatus} />
           </div>
-          <p>Magnolia Film Lab · 0.005 SOL თითო გამოყენებაზე</p>
+          <p>{en.preview.hostDealMeta}</p>
           <button
             className="preview-action preview-action--green"
             type="button"
@@ -245,21 +243,21 @@ function HostView({
             onClick={() => dispatch({ type: 'approve_deal' })}
           >
             {state.dealStatus === 'proposed'
-              ? ka.preview.approveDeal
-              : 'შეთავაზება დამტკიცებულია'}
+              ? en.preview.approveDeal
+              : en.preview.offerApproved}
           </button>
           {!canApprove && state.campaignStatus === 'draft' ? (
             <span className="preview-disabled-hint">
-              ჯერ Magnolia-ს სიმულირებულ დაფინანსებას ელოდება
+              {en.preview.waitingForFunding}
             </span>
           ) : null}
         </article>
 
         <article className="preview-pass">
           <div className="preview-pass__copy">
-            <span className="preview-kicker">{ka.preview.passTitle}</span>
+            <span className="preview-kicker">{en.preview.passTitle}</span>
             <strong className="mono">{ids.claim}</strong>
-            <p>{ka.preview.passHint}</p>
+            <p>{en.preview.passHint}</p>
           </div>
           <div className="preview-qr" aria-hidden="true">
             {Array.from({ length: 25 }, (_, index) => (
@@ -271,7 +269,7 @@ function HostView({
 
       <article className="preview-visit-console">
         <div>
-          <span className="preview-kicker">{ka.preview.progress}</span>
+          <span className="preview-kicker">{en.preview.progress}</span>
           <strong className="preview-visit-count">{state.verifiedVisits}/3</strong>
         </div>
         <div className="preview-stamps preview-stamps--compact">
@@ -285,8 +283,8 @@ function HostView({
               <span>0{visit}</span>
               <small>
                 {visit <= state.verifiedVisits
-                  ? ka.preview.visitVerified
-                  : ka.preview.visitPending}
+                  ? en.preview.visitVerified
+                  : en.preview.visitPending}
               </small>
             </div>
           ))}
@@ -298,8 +296,8 @@ function HostView({
           onClick={() => dispatch({ type: 'verify_visit' })}
         >
           {state.verifiedVisits < 3
-            ? `${ka.preview.verifyVisit} ${state.verifiedVisits + 1}/3`
-            : 'სამივე ვიზიტი დადასტურებულია'}
+            ? `${en.preview.verifyVisit} ${state.verifiedVisits + 1}/3`
+            : en.preview.allVisitsVerified}
         </button>
       </article>
 
@@ -319,9 +317,9 @@ function CustomerView({
     <section className="preview-workspace" aria-labelledby="customer-title">
       <header className="preview-workspace__header">
         <div>
-          <span className="preview-kicker">{ka.preview.customerKicker}</span>
-          <h2 id="customer-title">{ka.preview.customerTitle}</h2>
-          <p>{ka.preview.customerBody}</p>
+          <span className="preview-kicker">{en.preview.customerKicker}</span>
+          <h2 id="customer-title">{en.preview.customerTitle}</h2>
+          <p>{en.preview.customerBody}</p>
         </div>
         <StatusBadge kind="claim" status={state.claimStatus} />
       </header>
@@ -329,7 +327,7 @@ function CustomerView({
       <article className="preview-customer-pass">
         <div className="preview-customer-pass__top">
           <div>
-            <span className="preview-kicker">{ka.preview.progress}</span>
+            <span className="preview-kicker">{en.preview.progress}</span>
             <strong className="preview-progress-number">
               {state.verifiedVisits}<span>/3</span>
             </strong>
@@ -356,16 +354,13 @@ function CustomerView({
           state.claimStatus !== 'locked' ? 'preview-reward-card--open' : ''
         }`}
       >
-        <span className="preview-kicker">{ka.preview.reward}</span>
-        <h3>10 ₾ ფასდაკლება</h3>
-        <p>
-          40 ₾-ზე მეტი ღირებულების ფირის გამჟღავნებასა და სკანირებაზე Magnolia
-          Film Lab-ში.
-        </p>
+        <span className="preview-kicker">{en.preview.reward}</span>
+        <h3>{en.preview.rewardTitle}</h3>
+        <p>{en.preview.rewardBody}</p>
         <strong>
           {state.claimStatus === 'locked'
-            ? ka.preview.lockedReward
-            : ka.preview.unlockedReward}
+            ? en.preview.lockedReward
+            : en.preview.unlockedReward}
         </strong>
         <button
           className="preview-action preview-action--green"
@@ -375,8 +370,8 @@ function CustomerView({
         >
           {state.claimStatus === 'redemption_requested' ||
           state.claimStatus === 'redeemed'
-            ? 'გამოყენება მოთხოვნილია'
-            : ka.preview.requestReward}
+            ? en.preview.redemptionRequested
+            : en.preview.requestReward}
         </button>
       </article>
     </section>
@@ -398,6 +393,16 @@ export function DemoPreviewPage() {
     state.payoutStatus === 'paid',
   ];
 
+  const journeyLabels = [
+    en.preview.journey.connectWallet,
+    en.preview.journey.authorizeFunding,
+    en.preview.journey.camoraApproval,
+    en.preview.journey.ninoVisits,
+    en.preview.journey.requestReward,
+    en.preview.journey.magnoliaConfirm,
+    en.preview.journey.mockPayout,
+  ];
+
   return (
     <main className="demo-preview">
       <header className="preview-hero">
@@ -411,42 +416,42 @@ export function DemoPreviewPage() {
             type="button"
             onClick={() => dispatch({ type: 'reset' })}
           >
-            ↺ {ka.preview.reset}
+            ↺ {en.preview.reset}
           </button>
         </div>
         <div className="preview-hero__content">
           <div>
-            <span className="preview-kicker">{ka.preview.eyebrow}</span>
-            <h1>{ka.preview.title}</h1>
-            <p>{ka.preview.subtitle}</p>
+            <span className="preview-kicker">{en.preview.eyebrow}</span>
+            <h1>{en.preview.title}</h1>
+            <p>{en.preview.subtitle}</p>
           </div>
           <aside className="preview-disclosure">
             <strong>MOCK / NO BACKEND</strong>
-            <p>{ka.preview.mockDisclosure}</p>
+            <p>{en.preview.mockDisclosure}</p>
           </aside>
         </div>
       </header>
 
       <section className="preview-storybar">
         <div>
-          <span className="preview-kicker">{ka.preview.campaign}</span>
-          <h2>„გაამჟღავნე ღამე“</h2>
-          <p>{ka.preview.campaignStory}</p>
+          <span className="preview-kicker">{en.preview.campaign}</span>
+          <h2>{en.campaignName}</h2>
+          <p>{en.preview.campaignStory}</p>
         </div>
-        <div className="preview-storybar__route" aria-label={ka.preview.fullJourney}>
+        <div className="preview-storybar__route" aria-label={en.preview.fullJourney}>
           <span>Magnolia</span><i aria-hidden="true">→</i>
           <span>Camora</span><i aria-hidden="true">→</i>
-          <span>ნინო</span><i aria-hidden="true">→</i>
+          <span>Nino</span><i aria-hidden="true">→</i>
           <span>Magnolia</span>
         </div>
       </section>
 
       <div className="preview-layout">
         <aside className="preview-guide">
-          <span className="preview-kicker">{ka.preview.guidedDemo}</span>
+          <span className="preview-kicker">{en.preview.guidedDemo}</span>
           <div className="preview-step-count">
             <strong>{journeySteps.filter(Boolean).length}</strong>
-            <span>/ 7 ნაბიჯი</span>
+            <span>{en.preview.stepCount}</span>
           </div>
           <div className="preview-progress-track" aria-hidden="true">
             <span
@@ -456,8 +461,8 @@ export function DemoPreviewPage() {
             />
           </div>
           <div className="preview-next">
-            <span>{ka.preview.nextAction}</span>
-            <strong>{nextStep.labelKa}</strong>
+            <span>{en.preview.nextAction}</span>
+            <strong>{nextStep.label}</strong>
             {!completed && state.activePersona !== nextStep.persona ? (
               <button
                 type="button"
@@ -465,20 +470,12 @@ export function DemoPreviewPage() {
                   dispatch({ type: 'switch_persona', persona: nextStep.persona })
                 }
               >
-                {personaShortLabels[nextStep.persona]} → 
+                {personaShortLabels[nextStep.persona]} →
               </button>
             ) : null}
           </div>
           <ol className="preview-journey">
-            {[
-              'მოკი საფულის კავშირი',
-              'დაფინანსების ავტორიზაცია',
-              'Camora-ს დამტკიცება',
-              'ნინოს ვიზიტები 3/3',
-              'ჯილდოს მოთხოვნა',
-              'Magnolia-ს დადასტურება',
-              'მოკი გადახდა',
-            ].map((label, index) => (
+            {journeyLabels.map((label, index) => (
               <li className={journeySteps[index] ? 'is-done' : ''} key={label}>
                 <span>{journeySteps[index] ? '✓' : index + 1}</span>
                 {label}
@@ -488,7 +485,7 @@ export function DemoPreviewPage() {
         </aside>
 
         <div className="preview-stage">
-          <nav className="preview-personas" aria-label={ka.demoMode}>
+          <nav className="preview-personas" aria-label={en.demoMode}>
             {(['advertiser', 'host', 'customer'] as PreviewPersona[]).map(
               (persona) => (
                 <button
@@ -511,8 +508,8 @@ export function DemoPreviewPage() {
             <div className="preview-success">
               <span>✓</span>
               <div>
-                <h2>{ka.preview.successTitle}</h2>
-                <p>{ka.preview.successBody}</p>
+                <h2>{en.preview.successTitle}</h2>
+                <p>{en.preview.successBody}</p>
               </div>
             </div>
           ) : null}
@@ -532,14 +529,14 @@ export function DemoPreviewPage() {
       <section className="preview-activity">
         <div className="preview-activity__header">
           <div>
-            <span className="preview-kicker">{ka.preview.history}</span>
-            <h2>ყველა ხედის საერთო ამბავი</h2>
+            <span className="preview-kicker">{en.preview.history}</span>
+            <h2>{en.preview.sharedStory}</h2>
           </div>
           <div className="preview-status-row">
-            <span>{campaignStatusKa[state.campaignStatus]}</span>
-            <span>{dealStatusKa[state.dealStatus]}</span>
-            <span>{claimStatusKa[state.claimStatus]}</span>
-            <span>{payoutStatusKa[state.payoutStatus]}</span>
+            <span>{campaignStatusLabel[state.campaignStatus]}</span>
+            <span>{dealStatusLabel[state.dealStatus]}</span>
+            <span>{claimStatusLabel[state.claimStatus]}</span>
+            <span>{payoutStatusLabel[state.payoutStatus]}</span>
           </div>
         </div>
         <div className="preview-activity__list">
@@ -548,7 +545,7 @@ export function DemoPreviewPage() {
               <span>{String(item.id).padStart(2, '0')}</span>
               <div>
                 <small>{personaShortLabels[item.persona]}</small>
-                <strong>{item.labelKa}</strong>
+                <strong>{item.label}</strong>
               </div>
             </article>
           ))}

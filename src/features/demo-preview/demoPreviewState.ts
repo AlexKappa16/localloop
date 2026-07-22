@@ -4,6 +4,7 @@ import type {
   DealStatus,
   PayoutStatus,
 } from '../../../shared/types';
+import { en } from '../../copy/en';
 
 export type PreviewPersona = 'advertiser' | 'host' | 'customer';
 
@@ -28,7 +29,7 @@ export interface PreviewReceipt {
 export interface PreviewHistoryItem {
   id: number;
   persona: PreviewPersona;
-  labelKa: string;
+  label: string;
 }
 
 export interface PreviewState {
@@ -58,7 +59,7 @@ export const initialPreviewState: PreviewState = {
     {
       id: 1,
       persona: 'customer',
-      labelKa: 'ნინოს პირველი ვიზიტი უკვე დადასტურებულია — 1/3',
+      label: en.preview.historySeed,
     },
   ],
 };
@@ -66,7 +67,7 @@ export const initialPreviewState: PreviewState = {
 function withHistory(
   state: PreviewState,
   persona: PreviewPersona,
-  labelKa: string,
+  label: string,
   updates: Partial<PreviewState>,
 ): PreviewState {
   return {
@@ -74,7 +75,7 @@ function withHistory(
     ...updates,
     history: [
       ...state.history,
-      { id: state.history.length + 1, persona, labelKa },
+      { id: state.history.length + 1, persona, label },
     ],
   };
 }
@@ -88,25 +89,20 @@ export function previewReducer(
       return { ...state, activePersona: action.persona };
     case 'connect_wallet':
       if (state.walletConnected) return state;
-      return withHistory(state, 'advertiser', 'მოკი საფულე დაკავშირებულია', {
+      return withHistory(state, 'advertiser', en.preview.historyConnect, {
         walletConnected: true,
       });
     case 'authorize_funding':
       if (!state.walletConnected || state.campaignStatus !== 'draft') return state;
-      return withHistory(
-        state,
-        'advertiser',
-        'სიმულირებული დაფინანსება ავტორიზებულია',
-        {
-          campaignStatus: 'simulated_funded',
-          fundingReceipt: {
-            type: 'funding',
-            reference: 'PREVIEW-FUNDING-001',
-            memo:
-              'LocalLoop|proof|simulate-funding|campaign:magnolia-develop-the-night',
-          },
+      return withHistory(state, 'advertiser', en.preview.historyFund, {
+        campaignStatus: 'simulated_funded',
+        fundingReceipt: {
+          type: 'funding',
+          reference: 'PREVIEW-FUNDING-001',
+          memo:
+            'LocalLoop|proof|simulate-funding|campaign:magnolia-develop-the-night',
         },
-      );
+      });
     case 'approve_deal':
       if (
         state.campaignStatus !== 'simulated_funded' ||
@@ -114,7 +110,7 @@ export function previewReducer(
       ) {
         return state;
       }
-      return withHistory(state, 'host', 'Camora-მ შეთავაზება დაამტკიცა', {
+      return withHistory(state, 'host', en.preview.historyApprove, {
         campaignStatus: 'live',
         dealStatus: 'active',
       });
@@ -124,7 +120,7 @@ export function previewReducer(
       return withHistory(
         state,
         'host',
-        `Camora-მ დაადასტურა ვიზიტი — ${verifiedVisits}/3`,
+        en.preview.historyVisit(verifiedVisits),
         {
           verifiedVisits,
           claimStatus: verifiedVisits === 3 ? 'unlocked' : 'locked',
@@ -133,24 +129,19 @@ export function previewReducer(
     }
     case 'request_redemption':
       if (state.claimStatus !== 'unlocked') return state;
-      return withHistory(state, 'customer', 'ნინომ ჯილდოს გამოყენება მოითხოვა', {
+      return withHistory(state, 'customer', en.preview.historyRequest, {
         claimStatus: 'redemption_requested',
         payoutStatus: 'pending',
       });
     case 'validate_redemption':
       if (state.claimStatus !== 'redemption_requested') return state;
-      return withHistory(
-        state,
-        'advertiser',
-        'Magnolia-მ გამოყენება დაადასტურა',
-        {
-          claimStatus: 'redeemed',
-          payoutStatus: 'processing',
-        },
-      );
+      return withHistory(state, 'advertiser', en.preview.historyValidate, {
+        claimStatus: 'redeemed',
+        payoutStatus: 'processing',
+      });
     case 'complete_payout':
       if (state.payoutStatus !== 'processing') return state;
-      return withHistory(state, 'advertiser', 'Camora-ს მოკი გადახდა დასრულდა', {
+      return withHistory(state, 'advertiser', en.preview.historyPayout, {
         payoutStatus: 'paid',
         payoutReceipt: {
           type: 'payout',
@@ -169,40 +160,31 @@ export function previewReducer(
 
 export function getNextStep(state: PreviewState): {
   persona: PreviewPersona;
-  labelKa: string;
+  label: string;
 } {
   if (!state.walletConnected) {
-    return { persona: 'advertiser', labelKa: 'დააკავშირეთ Magnolia-ს მოკი საფულე' };
+    return { persona: 'advertiser', label: en.preview.nextConnect };
   }
   if (state.campaignStatus === 'draft') {
-    return {
-      persona: 'advertiser',
-      labelKa: 'მოაწერეთ ხელი სიმულირებული დაფინანსების ავტორიზაციას',
-    };
+    return { persona: 'advertiser', label: en.preview.nextSign };
   }
   if (state.dealStatus === 'proposed') {
-    return { persona: 'host', labelKa: 'Camora-ს სახელით დაამტკიცეთ შეთავაზება' };
+    return { persona: 'host', label: en.preview.nextApprove };
   }
   if (state.verifiedVisits < 3) {
     return {
       persona: 'host',
-      labelKa: `დაადასტურეთ ნინოს ვიზიტი ${state.verifiedVisits + 1}/3`,
+      label: en.preview.nextVisit(state.verifiedVisits + 1),
     };
   }
   if (state.claimStatus === 'unlocked') {
-    return { persona: 'customer', labelKa: 'ნინოს სახელით მოითხოვეთ ჯილდო' };
+    return { persona: 'customer', label: en.preview.nextRequest };
   }
   if (state.claimStatus === 'redemption_requested') {
-    return {
-      persona: 'advertiser',
-      labelKa: 'Magnolia-ს სახელით დაადასტურეთ გამოყენება',
-    };
+    return { persona: 'advertiser', label: en.preview.nextValidate };
   }
   if (state.payoutStatus === 'processing') {
-    return {
-      persona: 'advertiser',
-      labelKa: 'დაასრულეთ მოკი devnet ანგარიშსწორება',
-    };
+    return { persona: 'advertiser', label: en.preview.nextPayout };
   }
-  return { persona: 'advertiser', labelKa: 'დემო დასრულებულია — დაიწყეთ თავიდან' };
+  return { persona: 'advertiser', label: en.preview.nextDone };
 }

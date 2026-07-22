@@ -27,8 +27,6 @@ type DemoStateContextValue = {
   state: DemoState;
   status: DemoStatus;
   error: string | null;
-  /** @deprecated use `error` */
-  errorKa: string | null;
   refresh: () => Promise<void>;
   reset: () => Promise<void>;
   applyState: (next: DemoState) => void;
@@ -144,7 +142,6 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
       state,
       status,
       error,
-      errorKa: error,
       refresh,
       reset,
       applyState,

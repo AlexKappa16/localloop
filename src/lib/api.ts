@@ -14,7 +14,7 @@ export class ApiClientError extends Error {
   readonly details?: Record<string, unknown>;
 
   constructor(body: ApiErrorBody['error']) {
-    super(body.messageKa);
+    super(body.message);
     this.name = 'ApiClientError';
     this.code = body.code;
     this.retryable = body.retryable;

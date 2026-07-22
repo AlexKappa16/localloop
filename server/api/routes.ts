@@ -48,7 +48,7 @@ function challengeError(err: unknown): AppError {
       : code === 'CHALLENGE_EXPIRED' || code === 'CHALLENGE_REPLAY'
         ? 409
         : 400;
-  return new AppError({ code, messageKa: message, status, retryable: false });
+  return new AppError({ code, message, status, retryable: false });
 }
 
 export function createApiRouter(): Router {
@@ -124,7 +124,7 @@ export function createApiRouter(): Router {
       if (!body?.walletAddress || typeof body.walletAddress !== 'string') {
         throw new AppError({
           code: 'INVALID_REQUEST',
-          messageKa: 'walletAddress is required.',
+          message: 'walletAddress is required.',
           status: 400,
         });
       }
@@ -142,7 +142,7 @@ export function createApiRouter(): Router {
       if (campaignId !== ids.campaign) {
         throw new AppError({
           code: 'CAMPAIGN_NOT_ALLOWED',
-          messageKa: 'Funding authorization is only allowed for the seeded Magnolia campaign.',
+          message: 'Funding authorization is only allowed for the seeded Magnolia campaign.',
           status: 400,
         });
       }
@@ -155,7 +155,7 @@ export function createApiRouter(): Router {
       ) {
         throw new AppError({
           code: 'INVALID_REQUEST',
-          messageKa: 'challengeId, walletAddress, and signatureBase58 are required.',
+          message: 'challengeId, walletAddress, and signatureBase58 are required.',
           status: 400,
         });
       }
@@ -165,7 +165,7 @@ export function createApiRouter(): Router {
       if (!campaign) {
         throw new AppError({
           code: 'CAMPAIGN_NOT_FOUND',
-          messageKa: 'Campaign not found.',
+          message: 'Campaign not found.',
           status: 404,
         });
       }
@@ -205,7 +205,7 @@ export function createApiRouter(): Router {
       if (!valid) {
         throw new AppError({
           code: 'SIGNATURE_INVALID',
-          messageKa:
+          message:
             'Wallet signature verification failed. Sign the exact challenge message.',
           status: 401,
           retryable: true,
@@ -215,7 +215,7 @@ export function createApiRouter(): Router {
       if (!isSolanaReady()) {
         throw new AppError({
           code: 'SOLANA_NOT_READY',
-          messageKa:
+          message:
             'Solana is not configured. Set DEMO_TREASURY_SECRET_KEY, DEMO_HOST_PUBLIC_KEY, SOLANA_CLUSTER=devnet, and SOLANA_RPC_URL, then fund the treasury on the faucet.',
           status: 503,
           retryable: true,
@@ -228,7 +228,7 @@ export function createApiRouter(): Router {
       } catch (err) {
         throw new AppError({
           code: 'FUNDING_PROOF_FAILED',
-          messageKa:
+          message:
             err instanceof Error
               ? `Funding proof failed: ${err.message}`
               : 'Funding proof failed on Solana devnet.',
@@ -271,7 +271,7 @@ export function createApiRouter(): Router {
       if (!body?.customerId) {
         throw new AppError({
           code: 'INVALID_REQUEST',
-          messageKa: 'customerId is required.',
+          message: 'customerId is required.',
           status: 400,
         });
       }
@@ -341,7 +341,7 @@ export function createApiRouter(): Router {
         failHostPayout(claimId);
         throw new AppError({
           code: 'SOLANA_NOT_READY',
-          messageKa:
+          message:
             'Solana is not configured. Set DEMO_TREASURY_SECRET_KEY, DEMO_HOST_PUBLIC_KEY, SOLANA_CLUSTER=devnet, and SOLANA_RPC_URL, then fund the treasury on the faucet.',
           status: 503,
           retryable: true,
@@ -355,7 +355,7 @@ export function createApiRouter(): Router {
         failHostPayout(claimId);
         throw new AppError({
           code: 'HOST_PAYOUT_FAILED',
-          messageKa:
+          message:
             err instanceof Error
               ? `Host payout failed: ${err.message}`
               : 'Host payout failed on Solana devnet.',

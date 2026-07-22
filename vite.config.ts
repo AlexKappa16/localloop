@@ -9,6 +9,9 @@ export default defineConfig({
       '@shared': path.resolve(__dirname, 'shared'),
     },
   },
+  define: {
+    'process.env': {},
+  },
   server: {
     port: 5173,
     proxy: {

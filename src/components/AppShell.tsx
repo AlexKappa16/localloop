@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
-import { ka } from '../copy/ka';
+import { en } from '../copy/en';
 import { DemoPersonaSwitcher } from './DemoPersonaSwitcher';
 import { DemoResetButton } from './DemoResetButton';
 import { useDemoState } from '../app/DemoStateProvider';
@@ -18,13 +18,13 @@ export function AppShell({ children, title, workspaceSwitch }: AppShellProps) {
     <div className="app-shell">
       <header className="app-shell__header">
         <Link to="/" className="app-shell__brand">
-          {ka.brand}
+          {en.brand}
         </Link>
         <div className="app-shell__meta">
           <DemoPersonaSwitcher />
           {workspaceSwitch}
           <span className="mono muted">
-            {ka.revisionLabel}: {status === 'ready' ? state.revision : '—'}
+            {en.revisionLabel}: {status === 'ready' ? state.revision : '—'}
           </span>
           <DemoResetButton />
         </div>

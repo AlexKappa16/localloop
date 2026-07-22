@@ -7,13 +7,15 @@
     "dev": "concurrently -k \"vite\" \"tsx watch server/index.ts\"",
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
-    "start": "tsx server/index.ts"
+    "start": "tsx server/index.ts",
+    "solana:check": "tsx server/scripts/solana-check.ts",
+    "test": "tsx --test server/**/*.test.ts shared/**/*.test.ts"
   },
   "dependencies": {
     "@solana/wallet-adapter-base": "^0.9.27",
+    "@solana/wallet-adapter-phantom": "^0.9.29",
     "@solana/wallet-adapter-react": "^0.15.39",
     "@solana/wallet-adapter-react-ui": "^0.9.39",
-    "@solana/wallet-adapter-wallets": "^0.19.37",
     "@solana/web3.js": "^1.98.4",
     "bs58": "^6.0.0",
     "cors": "^2.8.5",

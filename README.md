@@ -5,10 +5,10 @@ nearby host businesses unlock customer rewards, and verified redemption triggers
 a host payout on Solana **devnet** — without moving funds from the connected
 advertiser wallet.
 
-## Quick start
+## Quick start (app without Solana secrets)
 
 ```bash
-cp .env.example .env   # fill server-only Solana secrets later (LL-105)
+cp .env.example .env   # fill Solana secrets when ready (see below)
 npm install
 npm run dev
 ```
@@ -18,11 +18,47 @@ npm run dev
 
 ```bash
 npm run typecheck
+npm run test
 npm run build
 npm start              # serves API + dist/
+npm run solana:check   # safe readiness check (never prints the private key)
 ```
 
 Requires Node.js 20+.
+
+The app starts safely when Solana secrets are missing:
+
+- `/api/health` returns `solanaReady: false`
+- Non-Solana pages and state transitions remain usable where valid
+- Funding / payout actions return clear configuration errors (no fake Explorer receipts)
+
+## Solana use cases (what chain is for)
+
+1. **Advertiser authorization** — Magnolia’s connected wallet signs a plaintext
+   challenge with `signMessage` only (no transfer, no fee).
+2. **Funding proof** — after verification, the **server treasury** submits a
+   memo-only transaction on Solana **devnet**. Campaign funding stays simulated.
+3. **Host payout** — after redemption validation, the **server treasury** sends
+   exactly **0.005** faucet-issued devnet SOL to `DEMO_HOST_PUBLIC_KEY` with the
+   canonical payout memo. Idempotent per claim ID.
+
+## Manual Solana setup checklist
+
+Create a local `.env` (never commit it) from `.env.example`, then supply:
+
+1. **`DEMO_TREASURY_SECRET_KEY`** — base58 secret of a disposable **devnet-only**
+   keypair (server fee payer + memo/payout signer).
+2. **`DEMO_HOST_PUBLIC_KEY`** — Camora demo wallet public address (payout destination).
+3. **`SOLANA_RPC_URL`** — e.g. `https://api.devnet.solana.com` (must be devnet).
+4. Keep **`SOLANA_CLUSTER=devnet`** exactly.
+5. Fund the treasury public address at [faucet.solana.com](https://faucet.solana.com/)
+   with enough faucet SOL for fees + one `0.005` payout.
+6. Install / unlock **Phantom** (or another Wallet Standard wallet) for the
+   Magnolia advertiser `signMessage` walkthrough — that wallet does **not** need
+   funds for transfers.
+7. Run `npm run solana:check` and confirm `solanaReady: true`.
+8. Optional public tunnel: `ngrok http 3001` after `npm run build && npm start`
+   (relative `/api` URLs — no CORS changes).
 
 ## Docs for agents
 
@@ -30,9 +66,3 @@ Requires Node.js 20+.
 - [`CLAUDE.md`](./CLAUDE.md) — concise mirror
 - [`CONTEXT_HANDOVER.md`](./CONTEXT_HANDOVER.md) — architecture & demo story
 - [`HACKATHON_EPICS.md`](./HACKATHON_EPICS.md) — epics & acceptance criteria
-
-## Scaffold status (LL-101)
-
-Foundation is in place: shared contracts, Express API stubs, React routes,
-shell components, English copy, and flexible design tokens. Domain transitions
-(LL-102), feature polish (LL-103/104), and Solana wallet flow (LL-105) come next.

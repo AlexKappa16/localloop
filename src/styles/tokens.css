@@ -11,8 +11,8 @@
   --color-focus: #1f6b4a;
   --shadow-hard: 4px 4px 0 var(--color-border);
   --radius: 6px;
-  --font-georgian: 'Noto Sans Georgian', 'Noto Sans', sans-serif;
-  --font-display: 'Space Grotesk', 'Noto Sans Georgian', sans-serif;
+  --font-sans: 'Source Sans 3', 'Segoe UI', sans-serif;
+  --font-display: 'Space Grotesk', 'Source Sans 3', sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
   --space-1: 0.25rem;
   --space-2: 0.5rem;

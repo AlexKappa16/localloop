@@ -1,13 +1,16 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { DemoPreviewPage } from '../features/demo-preview/DemoPreviewPage';
+import { WalletProviders } from '../lib/WalletProviders';
 import { DemoStateProvider } from './DemoStateProvider';
 import { AppRouter } from './router';
 
 function CanonicalApp() {
   return (
-    <DemoStateProvider>
-      <AppRouter />
-    </DemoStateProvider>
+    <WalletProviders>
+      <DemoStateProvider>
+        <AppRouter />
+      </DemoStateProvider>
+    </WalletProviders>
   );
 }
 

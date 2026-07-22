@@ -51,7 +51,7 @@ export function errorHandler(
   res.status(500).json({
     error: {
       code: 'INTERNAL_ERROR',
-      messageKa: 'სერვერის შეცდომა. სცადეთ თავიდან.',
+      messageKa: 'Server error. Please try again.',
       retryable: true,
     },
   } satisfies ApiErrorBody);

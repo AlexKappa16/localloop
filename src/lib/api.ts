@@ -23,7 +23,15 @@ export class ApiClientError extends Error {
 }
 
 async function parseJson<T>(response: Response): Promise<T> {
-  const data = (await response.json()) as T | ApiErrorBody;
+  const text = await response.text();
+  let data: T | ApiErrorBody;
+  try {
+    data = JSON.parse(text) as T | ApiErrorBody;
+  } catch {
+    throw new Error(
+      'API unavailable on this deploy. Open /demo-preview for the mocked walkthrough.',
+    );
+  }
   if (!response.ok) {
     const err = data as ApiErrorBody;
     if (err.error) {

@@ -288,6 +288,29 @@ Demo aliases:
 The router must reject or redirect a business workspace when the selected
 business lacks the requested capability.
 
+### Temporary frontend-only prototype
+
+`/demo-preview` is an isolated presentation prototype for rehearsing the full
+Magnolia → Camora → Nino happy path before backend integration. It is explicitly
+noncanonical and must not change the behavior of `/`, `/customer`,
+`/advertiser`, `/host`, or the parameterized workspace routes.
+
+Prototype boundaries:
+
+- Render it outside `DemoStateProvider`; it must make no API, SSE, wallet
+  adapter, or Solana calls.
+- Keep its reducer and mutable state inside `src/features/demo-preview/`.
+- Seed it from the canonical story: Nino 1/3, campaign `draft`, Camora deal
+  `proposed`, claim `locked`, payout `not_ready`, and 0.05 SOL simulated budget.
+- Guard the same ordered transitions as the real flow and finish at 3/3,
+  `redeemed`, payout `paid`, and 0.045 SOL remaining.
+- Label every wallet, signature, funding, payout, and receipt interaction as
+  mock. Do not fabricate or link to Solana Explorer transactions.
+- Keep the TSRE Gym proposed card visible, but do not add a TSRE E2E flow.
+- Treat this route as rehearsal UI only. It does not satisfy LL-102 or LL-105
+  acceptance criteria and must not be reused as a client-side authoritative
+  store for canonical routes.
+
 ## 4. Shared domain and state-machine contract
 
 ### Domain vocabulary

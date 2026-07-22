@@ -116,6 +116,25 @@ Demo aliases:
 
 `/` is a polished demo launcher, not a fourth product workspace.
 
+### Frontend-only prototype route
+
+`/demo-preview` is a temporary, self-contained presentation prototype used to
+rehearse the complete Magnolia → Camora → Nino story before backend integration.
+It is not a canonical product workspace or a replacement for the three live
+demo routes.
+
+- It renders outside `DemoStateProvider` and does not call REST, SSE, wallet
+  adapters, or Solana.
+- Its state machine is local and resettable, seeded at Nino 1/3, campaign
+  `draft`, Camora deal `proposed`, claim `locked`, and payout `not_ready`.
+- Wallet connection, message signing, funding proof, and payout are visibly
+  marked mock interactions. Mock receipts have no Explorer links and must never
+  be presented as blockchain transactions.
+- It rehearses the same ordered happy path and budget change as the final demo,
+  while TSRE Gym remains a presentation-only proposed deal.
+- The production demo still requires server-authoritative state, real cross-tab
+  synchronization, verified wallet messages, and server-funded devnet receipts.
+
 ## Architecture
 
 Build one TypeScript repository with two runtime layers:

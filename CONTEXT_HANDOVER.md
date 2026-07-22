@@ -24,15 +24,15 @@ the connected advertiser wallet:
 
 ## Core demo story
 
-Magnolia Film Lab runs the fictional campaign **„გაამჟღავნე ღამე“**
-(“Develop the Night”) with nearby host Camora.
+Magnolia Film Lab runs the fictional campaign **"Develop the Night"** with
+nearby host Camora.
 
 ```text
 Magnolia connects a wallet and signs a no-cost funding authorization
 → LocalLoop marks the 0.05 SOL campaign budget as simulated funding
 → A server demo wallet records a real funding-proof memo on devnet
 → Camora approves the partner deal
-→ Nino completes „Camora-ში 3 დადასტურებული ვიზიტი“
+→ Nino completes "3 verified visits at Camora"
 → Nino unlocks the Magnolia reward
 → Nino requests redemption at Magnolia
 → Magnolia validates the redemption
@@ -42,7 +42,7 @@ Magnolia connects a wallet and signs a no-cost funding authorization
 
 The reward is:
 
-> 10 ₾ ფასდაკლება 40 ₾-ზე მეტი ღირებულების ფირის გამჟღავნებასა და სკანირებაზე
+> 10 ₾ off film development and scanning on orders over 40 ₾
 
 `TSRE Gym` is the second, mocked host deal. It demonstrates that one advertiser
 campaign can contain several host relationships with distinct terms. Only the
@@ -135,7 +135,7 @@ Node + Express API
 ### Frontend responsibilities
 
 - Render the three views and demo launcher.
-- Render Georgian-first product copy.
+- Render clear English product copy.
 - Connect a Wallet Standard-compatible Solana wallet.
 - Request `signMessage` only; never request a transaction signature.
 - Fetch canonical state from the API.
@@ -232,7 +232,7 @@ src/
     events.ts
     wallet.ts
   copy/
-    ka.ts
+    en.ts
   styles/
 server/
   index.ts
@@ -272,7 +272,7 @@ Transaction type: funding_proof | host_payout
 
 Keep claim and payout state separate. A deal does not become `paid`; its payout
 record does. Internal enum values remain English code identifiers and render as
-Georgian labels in the UI.
+clear, human-readable English labels in the UI.
 
 Core transition sequence:
 
@@ -302,14 +302,14 @@ Businesses
 
 Campaign
 - ID: magnolia-develop-the-night
-- Name: „გაამჟღავნე ღამე“
+- Name: "Develop the Night"
 - Advertiser: Magnolia Film Lab
 - Simulated budget: 0.05 SOL
 
 Camora deal
 - ID: camora-deal
-- Requirement: Camora-ში 3 დადასტურებული ვიზიტი
-- Reward: 10 ₾ ფასდაკლება 40 ₾-ზე მეტი ღირებულების ფირის გამჟღავნებასა და სკანირებაზე
+- Requirement: 3 verified visits at Camora
+- Reward: 10 ₾ off film development and scanning on orders over 40 ₾
 - Payout: 0.005 faucet-issued devnet SOL
 - Maximum redemptions: 10
 
@@ -412,59 +412,62 @@ never `.env` or generated keypairs.
 
 ## Language and product copy
 
-All app-owned user-facing copy must be natural Georgian whenever Georgian is
-appropriate: navigation, headings, buttons, helper text, wallet guidance,
-statuses, loading/error states, reward terms, and demo controls.
+All app-owned user-facing copy must be clear, natural English: navigation,
+headings, buttons, helper text, wallet guidance, statuses, loading/error/empty
+states, reward terms, and demo controls.
 
 Keep official business names, `LocalLoop`, addresses, wallet addresses,
 transaction signatures, IDs, `SOL`, `devnet`, and URLs in their conventional
-form. Third-party wallet dialogs and Solana Explorer are outside the app’s
-localization scope.
+form. Third-party wallet dialogs and Solana Explorer are outside the app’s copy
+scope.
 
-Set `<html lang="ka">`. Use an explicitly loaded Georgian-capable font for
-Georgian text; never rely on accidental browser fallback.
+Set `<html lang="en">`. Keep finished product terms in a central English copy
+and status map rather than scattering near-duplicate wording through pages.
 
 Canonical copy includes:
 
 ```text
-Campaign: „გაამჟღავნე ღამე“
-Fund action: „კამპანიის სიმულირებული დაფინანსება“
-Verify visit: „Camora-ს ვიზიტის დადასტურება“
-Redeem request: „ჯილდოს გამოყენების მოთხოვნა“
-Validate redemption: „გამოყენების დადასტურება“
-Funding label: „სიმულირებული ბიუჯეტი“
-Settlement label: „სატესტო ანგარიშსწორება Solana devnet-ზე“
-Reset: „დემოს თავიდან დაწყება“
-Claim statuses: „ჩაკეტილია“ → „გახსნილია“ → „გამოყენება მოთხოვნილია“ → „გამოყენებულია“
-Payout statuses: „ჯერ არ არის მზად“ → „მოლოდინშია“ → „მუშავდება“ → „გადახდილია“
+Campaign: "Develop the Night"
+Fund action: "Simulate campaign funding"
+Verify visit: "Verify Camora visit"
+Redeem request: "Request reward redemption"
+Validate redemption: "Validate redemption"
+Funding label: "Simulated budget"
+Settlement label: "Demo settlement on Solana devnet"
+Reset: "Reset demo"
+Claim statuses: "Locked" → "Unlocked" → "Redemption requested" → "Redeemed"
+Payout statuses: "Not ready" → "Pending" → "Processing" → "Paid"
 ```
 
 ## Design and brand direction
 
-The default direction is modern, welcoming neobrutalism inspired by a friendly
-local print poster rather than a generic SaaS or crypto dashboard.
+The visual direction is deliberately flexible. Industrial/editorial and
+newspaper-inspired design is a strong option for the local-business story;
+neobrutalist borders, blocks, or shadows can be used selectively. These are
+references, not a required style recipe.
 
-```text
-Primary: welcoming deep green
-Background: warm off-white paper
-Accents: coral and yellow, used sparingly
-Georgian UI: Noto Sans Georgian
-Latin display/brand text: Space Grotesk
-Latin technical metadata: IBM Plex Mono
-```
+There is no prescribed primary color, paper background, accent combination,
+shadow treatment, or font stack. Establish a compact set of reusable design
+tokens and choose colors, type, spacing, borders, and imagery as one coherent
+system. Possible ingredients include editorial hierarchy, utilitarian grids,
+rules and labels, ink/paper texture, monochrome or limited-color palettes,
+stamps, and selective monospace. Gradients, illustration, photography, softer
+forms, texture, and motion are equally valid when purposeful.
 
-Default characteristics:
+Non-negotiable usability guardrails:
 
-- Mobile-first at 375px, responsive through desktop.
-- Strong borders and hard offset shadows.
-- Prefer flat colors and clear hierarchy.
+- Mobile-first at 375px and fully usable through desktop.
 - Minimum 44px touch targets.
-- Accessible contrast, focus, loading, and disabled states.
+- Readable typography and accessible contrast.
+- Visible keyboard focus and distinct loading, disabled, success, empty, and
+  error states.
+- Clear hierarchy across dense campaign, deal, claim, and transaction data.
+- Consistency across all three workspaces without forcing them into identical
+  layouts.
 
-This is a default, not a ban on creative exploration. Gradients,
-glassmorphism, glow, blur, softer shadows, rounded forms, illustration, motion,
-or other styles may be used when the user or an approved design prompt
-explicitly requests them. Do not add them automatically as generic polish.
+Avoid generic crypto-dashboard clichés, illegible decorative effects, and
+style flourishes with no role in hierarchy or storytelling. Creative choices
+do not require special approval when they stay within these guardrails.
 
 ## Coordination and documentation contract
 
@@ -472,7 +475,7 @@ explicitly requests them. Do not add them automatically as generic polish.
 - `AGENTS.md` is the detailed repository rule set; `CLAUDE.md` is its concise
   mirror.
 - Both must include the architecture, dual-capability business model,
-  Georgian-first copy contract, design-default/creative-freedom rule, Solana
+  English-copy contract, flexible design direction and usability guardrails, Solana
   wallet safety rules, and required validation commands.
 - Keep this file synchronized with `HACKATHON_EPICS.md`. Changes to routes,
   state, IDs, copy, design, APIs, or Solana behavior must update both documents.
@@ -492,10 +495,10 @@ explicitly requests them. Do not add them automatically as generic polish.
 6. Verify Nino’s two remaining visits; show /customer updating live.
 7. Request reward redemption from /customer.
 8. Validate the redemption from Magnolia’s advertiser workspace.
-9. Show payout processing, then Camora’s „გადახდილია“ status.
+9. Show payout processing, then Camora’s "Paid" status.
 10. Open the real server-funded payout transaction in Solana Explorer.
 11. Show the simulated remaining budget reduced by 0.005 SOL.
-12. Use „დემოს თავიდან დაწყება“ and verify every view returns to seeded state.
+12. Use "Reset demo" and verify every view returns to seeded state.
 ```
 
 ## Detailed backlog

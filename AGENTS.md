@@ -80,34 +80,41 @@ Reject or redirect a business workspace when the business lacks that capability.
 Navigation must stay distinct:
 
 - `DemoPersonaSwitcher` — demo tooling (Nino / Magnolia / Camora), labelled
-  „დემოს რეჟიმი“.
+  "Demo mode".
 - `BusinessWorkspaceSwitcher` — advertiser/host tasks for the same business.
 
-## Georgian-first copy
+## English copy
 
-All app-owned UI copy must be natural Georgian where appropriate. Keep
-business names, `LocalLoop`, addresses, wallet addresses, signatures, IDs,
-`SOL`, `devnet`, and URLs in conventional form.
+All app-owned UI copy must be clear, natural English. Keep business names,
+`LocalLoop`, addresses, wallet addresses, signatures, IDs, `SOL`, `devnet`, and
+URLs in their conventional form.
 
-- `<html lang="ka">`
-- Load an explicit Georgian-capable font (Noto Sans Georgian). Never rely on
-  accidental browser fallback.
-- Internal enums stay English; translate at the presentation boundary via
-  `src/copy/ka.ts`.
+- Set `<html lang="en">`.
+- Keep user-facing terminology centralized in `src/copy/en.ts`; do not expose
+  raw enum values as finished UI copy.
+- Prefer direct, concise language. Clearly distinguish simulated funding from
+  real server-funded devnet activity.
 
-## Design default
+## Design direction
 
-Modern welcoming neobrutalism (local print-poster feel):
+The visual system is intentionally open. An industrial/editorial or newspaper
+character is a useful direction, and neobrutalist details may be mixed in, but
+none of those references is a mandatory house style.
 
-- Primary: welcoming deep green
-- Background: warm off-white paper
-- Accents: coral and yellow, sparingly
-- Fonts: Noto Sans Georgian; Space Grotesk (Latin display); IBM Plex Mono (tech)
-- Mobile-first 375px; strong borders; hard offset shadows; ≥44px touch targets
+- No prescribed primary color, background, accent palette, border treatment,
+  shadow style, or font family. Choose a small, coherent tokenized system that
+  supports the concept and remains consistent across all three workspaces.
+- Editorial typography, restrained monochrome palettes, ink/paper cues,
+  utilitarian grids, rules, labels, stamps, and selective monospace are welcome
+  options—not requirements.
+- Gradients, texture, softer forms, illustration, motion, and other treatments
+  are allowed when they strengthen hierarchy and the product story.
 
-Creative alternatives (gradients, glass, glow, softer shadows, etc.) only when
-the user or an approved design prompt explicitly requests them. Do not add them
-as generic polish.
+Guardrails: mobile-first at 375px, responsive on desktop, ≥44px touch targets,
+accessible contrast, visible focus, readable typography, and explicit loading,
+disabled, success, empty, and error states. Avoid visual effects that reduce
+legibility, generic crypto-dashboard clichés, and decoration without a clear
+role. Treat creative direction as a design decision, not a compliance checklist.
 
 ## Solana wallet safety (non-negotiable)
 

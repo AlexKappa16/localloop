@@ -18,15 +18,15 @@ architecture in this document.
 
 ### Canonical demo story
 
-**Magnolia Film Lab** creates the fictional campaign **„გაამჟღავნე ღამე“**
-(“Develop the Night”) with nearby host **Camora**.
+**Magnolia Film Lab** creates the fictional campaign **"Develop the Night"**
+with nearby host **Camora**.
 
 ```text
 Magnolia connects a wallet and signs a no-cost funding authorization
 → LocalLoop marks 0.05 SOL as a simulated campaign budget
 → The server records a real funding-proof memo on Solana devnet
 → Camora approves the deal
-→ Nino completes „Camora-ში 3 დადასტურებული ვიზიტი“
+→ Nino completes "3 verified visits at Camora"
 → Nino unlocks the Magnolia reward
 → Nino requests redemption
 → Magnolia validates the redemption
@@ -36,7 +36,7 @@ Magnolia connects a wallet and signs a no-cost funding authorization
 
 Reward:
 
-> 10 ₾ ფასდაკლება 40 ₾-ზე მეტი ღირებულების ფირის გამჟღავნებასა და სკანირებაზე
+> 10 ₾ off film development and scanning on orders over 40 ₾
 
 `TSRE Gym` is a second, proposed mock deal that proves one campaign can contain
 multiple host relationships. Only the Camora path must work end to end.
@@ -63,7 +63,7 @@ The demo is complete only when all of the following are true:
 - The server sends a real faucet-funded devnet payout to the Camora demo wallet.
 - Funding-proof and payout transactions open on Solana Explorer with
   `?cluster=devnet`.
-- All app-owned UI copy is Georgian where appropriate.
+- All app-owned UI copy is clear, natural English.
 - Reset restores every view to the seeded state.
 - `npm run typecheck` and `npm run build` succeed.
 
@@ -183,7 +183,7 @@ src/
     events.ts
     wallet.ts
   copy/
-    ka.ts
+    en.ts
   styles/
     tokens.css
     globals.css
@@ -265,7 +265,7 @@ Keep these controls separate:
 
 Seed Magnolia and Camora with both capabilities so the architecture is visible,
 but default the walkthrough to Magnolia advertiser and Camora host. Their
-opposite workspaces may show concise Georgian empty states; do not create extra
+opposite workspaces may show concise English empty states; do not create extra
 fake campaigns merely to fill them.
 
 Canonical routes:
@@ -317,7 +317,7 @@ type TransactionType = 'funding_proof' | 'host_payout';
 ```
 
 Deal status and payout status are separate. Never set a deal’s status to
-`paid`. English enum values are internal and must render as Georgian labels.
+`paid`. Enum values are internal and must render as human-readable English labels.
 
 ### Required transition sequence
 
@@ -384,7 +384,7 @@ Camora
 TSRE Gym
 - capabilities: host
 
-Campaign „გაამჟღავნე ღამე“
+Campaign "Develop the Night"
 - advertiser: Magnolia Film Lab
 - status: draft
 - total simulated budget: 0.05 SOL
@@ -392,8 +392,8 @@ Campaign „გაამჟღავნე ღამე“
 
 Camora deal
 - status: proposed
-- requirement: Camora-ში 3 დადასტურებული ვიზიტი
-- reward: 10 ₾ ფასდაკლება 40 ₾-ზე მეტი ღირებულების ფირის გამჟღავნებასა და სკანირებაზე
+- requirement: 3 verified visits at Camora
+- reward: 10 ₾ off film development and scanning on orders over 40 ₾
 - payout: 0.005 faucet-issued devnet SOL
 - maximum redemptions: 10
 
@@ -523,7 +523,7 @@ The connected advertiser wallet must never transfer funds or pay a fee.
 - Never build a `SystemProgram.transfer` from the connected wallet.
 - Never make the connected wallet the fee payer.
 - Never add an advertiser-wallet transfer fallback.
-- A wallet that lacks `signMessage` gets a clear Georgian unsupported-wallet
+- A wallet that lacks `signMessage` gets a clear English unsupported-wallet
   state; it does not fall back to a transaction.
 
 ### Server devnet wallet
@@ -555,7 +555,7 @@ Only after `confirmed` commitment:
 
 - Store the signature and Explorer URL.
 - Mark campaign `simulated_funded`.
-- Label the budget `სიმულირებული ბიუჯეტი`.
+- Label the budget `Simulated budget`.
 
 No SOL moves from the connected advertiser wallet.
 
@@ -608,69 +608,65 @@ Implementation references: [Solana clusters and devnet](https://solana.com/docs/
 [official devnet faucet](https://faucet.solana.com/), and
 [Solana memo payments](https://solana.com/docs/payments/send-payments/payment-with-memo).
 
-## 8. Georgian language contract
+## 8. English language contract
 
-All app-owned user-facing copy must be natural Georgian whenever appropriate:
-navigation, headings, buttons, helper text, wallet guidance, status labels,
+All app-owned user-facing copy must be clear, natural English: navigation,
+headings, buttons, helper text, wallet guidance, status labels,
 loading/error/empty states, reward terms, and demo controls.
 
 Keep official business names, `LocalLoop`, addresses, wallet addresses,
 transaction signatures, IDs, `SOL`, `devnet`, and URLs in conventional form.
-Third-party wallet dialogs and Solana Explorer are outside the app’s
-localization scope.
+Third-party wallet dialogs and Solana Explorer are outside the app’s copy
+scope.
 
-Set `<html lang="ka">`. Explicitly load a Georgian-capable font and never rely
-on accidental browser fallback.
+Set `<html lang="en">`.
 
 Canonical copy:
 
 ```text
-Campaign: „გაამჟღავნე ღამე“
-Reward: „10 ₾ ფასდაკლება 40 ₾-ზე მეტი ღირებულების ფირის გამჟღავნებასა და სკანირებაზე“
-Demo mode: „დემოს რეჟიმი“
-Fund action: „კამპანიის სიმულირებული დაფინანსება“
-Verify visit: „Camora-ს ვიზიტის დადასტურება“
-Redemption request: „ჯილდოს გამოყენების მოთხოვნა“
-Validate redemption: „გამოყენების დადასტურება“
-Funding label: „სიმულირებული ბიუჯეტი“
-Devnet label: „სატესტო ანგარიშსწორება Solana devnet-ზე“
-Reset: „დემოს თავიდან დაწყება“
-Claim: „ჩაკეტილია“ → „გახსნილია“ → „გამოყენება მოთხოვნილია“ → „გამოყენებულია“
-Payout: „ჯერ არ არის მზად“ → „მოლოდინშია“ → „მუშავდება“ → „გადახდილია“
+Campaign: "Develop the Night"
+Reward: "10 ₾ off film development and scanning on orders over 40 ₾"
+Demo mode: "Demo mode"
+Fund action: "Simulate campaign funding"
+Verify visit: "Verify Camora visit"
+Redemption request: "Request reward redemption"
+Validate redemption: "Validate redemption"
+Funding label: "Simulated budget"
+Devnet label: "Demo settlement on Solana devnet"
+Reset: "Reset demo"
+Claim: "Locked" → "Unlocked" → "Redemption requested" → "Redeemed"
+Payout: "Not ready" → "Pending" → "Processing" → "Paid"
 ```
 
-Internal enums stay English. Translate at the presentation boundary from a
-central copy/status map; do not scatter alternate translations through pages.
+Internal enums remain code identifiers. Convert them at the presentation
+boundary through a central copy/status map; do not scatter alternate labels
+through pages.
 
 ## 9. Design and brand contract
 
-Default typography:
+The visual system is open by design. Industrial/editorial and newspaper cues
+are strong options for the local-business story, and selective neobrutalist
+details can add energy, but no single reference is mandatory.
 
-```text
-Noto Sans Georgian: Georgian and mixed Georgian/Latin UI
-Space Grotesk: optional Latin display and brand text
-IBM Plex Mono: Latin technical metadata, IDs, addresses, and signatures
-```
+There is no required color palette, paper background, border weight, shadow
+style, or font stack. Choose a compact tokenized system and apply it coherently.
+Editorial type hierarchy, utilitarian grids, rules, labels, stamps, ink/paper
+texture, monochrome or limited-color palettes, and selective monospace are
+useful ingredients—not a checklist. Gradients, photography, illustration,
+softer forms, texture, and motion are also valid when they support the concept.
 
-Alternative typefaces are allowed when explicitly requested, but Georgian
-coverage and readability are mandatory.
-
-Default visual direction:
+Usability guardrails:
 
 - Mobile-first at 375px and fully usable on desktop.
-- Warm off-white paper background.
-- Welcoming deep green primary.
-- Coral and yellow accents used deliberately.
-- Strong borders and hard offset shadows.
-- Prefer flat colors and clear hierarchy.
 - Minimum 44px touch targets.
-- Visible focus, disabled, loading, success, and error states.
-- Friendly local print-poster character, not generic crypto/SaaS styling.
+- Readable typography and accessible color contrast.
+- Visible focus, disabled, loading, success, empty, and error states.
+- Clear hierarchy for campaign, deal, claim, wallet, and transaction data.
+- A consistent family resemblance across customer, advertiser, and host views.
 
-This is a starting point, not a creative prohibition. Gradients,
-glassmorphism, glow, blur, softer shadows, rounded forms, illustration, motion,
-or other treatments may be used when the user or an approved design prompt
-explicitly requests them. Do not add them automatically as generic polish.
+Avoid generic crypto/SaaS dashboard clichés, illegible decorative effects,
+and decoration without a role in hierarchy or storytelling. Creative choices
+within these guardrails do not need a special prompt or approval.
 
 ---
 
@@ -698,7 +694,7 @@ epic can implement against without inventing alternate architecture.
   LL-102 will connect to real endpoints.
 - Build `AppShell`, `DemoPersonaSwitcher`, `BusinessWorkspaceSwitcher`,
   `StatusBadge`, `TransactionReceipt`, and `DemoResetButton` primitives.
-- Establish centralized Georgian copy and status mappings.
+- Establish centralized English copy and status mappings.
 - Establish design tokens and responsive global styles.
 - Create `.env.example`, `.gitignore`, `AGENTS.md`, and `CLAUDE.md`.
 
@@ -713,8 +709,8 @@ Both files must state:
 - Advertiser/host are business capabilities, not fixed business types.
 - Server state is authoritative; frontend state is a projection.
 - No database or Docker by default.
-- Georgian-first copy and Georgian-capable typography requirements.
-- Default visual direction and explicitly prompted creative-freedom rule.
+- English-copy requirements and centralized presentation labels.
+- Flexible visual direction and non-negotiable usability guardrails.
 - The connected wallet may use `signMessage` only and must never send a
   transaction or pay a fee.
 - Server-only devnet secrets must never enter browser code or Git.
@@ -731,8 +727,8 @@ safety or architecture rules.
 - Direct navigation and refresh work for every canonical route.
 - Demo aliases resolve to the correct seeded IDs.
 - Business workspace routing checks the selected capability.
-- `<html lang="ka">` is set.
-- Georgian text visibly uses an explicitly loaded compatible font.
+- `<html lang="en">` is set.
+- UI typography is explicitly chosen, readable, and applied consistently.
 - Common components work at 375px and desktop widths.
 - Shared types contain no duplicated business-specific string literals.
 - `AGENTS.md` and `CLAUDE.md` contain every required contract above.
@@ -796,7 +792,7 @@ an Explorer URL, and remove the runtime test double before final integration.
   revision.
 - A mutation in one tab updates the other tabs without manual refresh.
 - Killing and restarting the frontend connection recovers by refetching state.
-- Invalid transitions return stable error codes and Georgian messages.
+- Invalid transitions return stable error codes and clear English messages.
 - Rapid duplicate clicks do not duplicate visits, claims, or payouts.
 - Reset synchronizes every open tab.
 - The browser contains no independent authoritative reducer.
@@ -830,13 +826,13 @@ Required content:
 
 - Nino identity and clear demo-mode framing.
 - Camora × Magnolia relationship.
-- Campaign name and Georgian reward terms.
+- Campaign name and English reward terms.
 - Progress from 1/3 to 3/3 using a memorable stamp/film-frame visual.
 - Locked, unlocked, redemption-requested, and redeemed claim states.
 - Claim ID `LL-NINO-001` in technical typography.
 - Reward terms and one-time-use explanation.
 - Status history showing which business performed each verification.
-- „ჯილდოს გამოყენების მოთხოვნა“ action only when unlocked.
+- "Request reward redemption" action only when unlocked.
 - Loading, rejection, and already-completed behavior.
 
 ## Host view
@@ -848,7 +844,7 @@ Required content:
 - Approve action, disabled until campaign is simulated-funded.
 - A permanent LocalLoop QR/pass placement visual; no real camera scanning.
 - Clearly restricted staff verification mode.
-- „Camora-ს ვიზიტის დადასტურება“ action.
+- "Verify Camora visit" action.
 - Current customer progress and recent verification history.
 - Payout amount, status, and Explorer receipt after LL-105 settlement.
 - No campaign-funding or advertiser budget controls in staff mode.
@@ -860,9 +856,9 @@ Required content:
 2. Nino starts at 1 of 3 visits.
 3. Camora verifies two remaining visits.
 4. Customer tab updates live after each verification.
-5. LL-NINO-001 becomes „გახსნილია“ at 3 of 3.
+5. LL-NINO-001 becomes "Unlocked" at 3 of 3.
 6. Nino requests redemption.
-7. Claim becomes „გამოყენება მოთხოვნილია“.
+7. Claim becomes "Redemption requested".
 8. After LL-104 validation and LL-105 payout, both views show completion.
 ```
 
@@ -875,7 +871,7 @@ Required content:
 - Staff controls are visibly distinct from business financial controls.
 - Payout `processing`, `failed`, retry, and `paid` states render clearly.
 - Explorer receipt uses the server-provided URL.
-- All app-owned copy follows the Georgian language contract.
+- All app-owned copy follows the English language contract.
 - All interactions work at 375px with minimum 44px targets.
 - `npm run typecheck` and `npm run build` succeed.
 
@@ -906,7 +902,7 @@ fixed account types.
 Required content:
 
 - Magnolia identity and advertiser workspace label.
-- Campaign „გაამჟღავნე ღამე“ with lifecycle status.
+- Campaign "Develop the Night" with lifecycle status.
 - Strong disclosure that the budget is simulated and no wallet transfer occurs.
 - Budget summary: total 0.05, reserved, paid, and remaining simulated SOL.
 - Camora deal: working demo path, 0.005 devnet SOL payout.
@@ -916,22 +912,22 @@ Required content:
   unsupported-wallet states supplied by LL-105.
 - Funding-proof receipt with Explorer link.
 - Incoming redemption request for `LL-NINO-001`.
-- „გამოყენების დადასტურება“ action.
+- "Validate redemption" action.
 - Payout progress and final Camora receipt.
 - Claims, redemption, payout count, and remaining-budget summary.
-- Mock „პარტნიორის დამატება“ interaction may add a local presentation-only card
+- Mock "Add partner" interaction may add a local presentation-only card
   but must not mutate canonical demo economics.
 
 ## Dual-capability UX
 
 - Show `BusinessWorkspaceSwitcher` inside a business context, not as a global
   actor selector.
-- Magnolia defaults to advertiser; its host workspace shows a concise Georgian
+- Magnolia defaults to advertiser; its host workspace shows a concise English
   empty state when selected.
-- Camora defaults to host; its advertiser workspace shows a concise Georgian
+- Camora defaults to host; its advertiser workspace shows a concise English
   empty state when selected.
 - The demo persona switcher keeps fixed Nino/Magnolia/Camora shortcuts and is
-  labelled „დემოს რეჟიმი“.
+  labelled "Demo mode".
 - Switching a business workspace preserves the selected business identity.
 - Do not use wording that implies every business must choose one permanent role.
 
@@ -946,7 +942,7 @@ Required content:
 - Remaining simulated budget becomes 0.045 only after confirmed payout.
 - Both workspaces enforce the selected business capability.
 - Demo persona switching and business workspace switching cannot be confused.
-- All app-owned copy follows the Georgian language contract.
+- All app-owned copy follows the English language contract.
 - `npm run typecheck` and `npm run build` succeed.
 
 ## Out of scope
@@ -1003,7 +999,7 @@ connected advertiser wallet.
 - Simulate before sending when practical, then send and confirm.
 - Return signature, Explorer URL, confirmation status, and transaction type.
 - Mark campaign simulated-funded only after confirmation.
-- On failure, leave campaign unfunded, show Georgian retry guidance, and never
+- On failure, leave campaign unfunded, show clear English retry guidance, and never
   fall back to a connected-wallet transaction.
 
 ## D. Host payout
@@ -1039,7 +1035,7 @@ connected advertiser wallet.
 - Both memos contain the canonical IDs.
 - The advertiser wallet is neither source nor fee payer of either transaction.
 - Repeating validation or retry after success does not send a second payout.
-- Invalid/missing server config fails safely with Georgian UI guidance.
+- Invalid/missing server config fails safely with clear English UI guidance.
 - No private key appears in the client bundle, source, logs, Git, or API output.
 - `npm run typecheck` and `npm run build` succeed.
 
@@ -1093,10 +1089,10 @@ Coordination rules:
 10. Watch /customer reach 3 of 3 and unlock LL-NINO-001 without refresh.
 11. Request redemption from /customer.
 12. Validate redemption from Magnolia’s advertiser workspace.
-13. Watch payout progress and Camora become „გადახდილია“.
+13. Watch payout progress and Camora become "Paid".
 14. Open the payout in Explorer and verify amount, host address, and memo.
 15. Confirm remaining simulated budget is 0.045 SOL.
-16. Use „დემოს თავიდან დაწყება“ and confirm every tab returns to seed state.
+16. Use "Reset demo" and confirm every tab returns to seed state.
 ```
 
 ### Required failure-path rehearsal
@@ -1121,7 +1117,7 @@ The following are mandatory P0 and cannot be cut:
 4. Real server-funded Camora payout and Explorer link.
 5. Live synchronization across the three views.
 6. Dual-capability business modeling and unambiguous navigation.
-7. Wallet safety, secret isolation, Georgian core copy, and truthful
+7. Wallet safety, secret isolation, clear English core copy, and truthful
    simulated-funding labels.
 
 Cut optional work in this order:

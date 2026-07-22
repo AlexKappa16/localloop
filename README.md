@@ -34,5 +34,5 @@ Requires Node.js 20+.
 ## Scaffold status (LL-101)
 
 Foundation is in place: shared contracts, Express API stubs, React routes,
-shell components, Georgian copy, and design tokens. Domain transitions (LL-102),
-feature polish (LL-103/104), and Solana wallet flow (LL-105) come next.
+shell components, English copy, and flexible design tokens. Domain transitions
+(LL-102), feature polish (LL-103/104), and Solana wallet flow (LL-105) come next.

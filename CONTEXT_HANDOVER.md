@@ -130,10 +130,26 @@ demo routes.
 - Wallet connection, message signing, funding proof, and payout are visibly
   marked mock interactions. Mock receipts have no Explorer links and must never
   be presented as blockchain transactions.
-- A mock business sign-in path can open a create-campaign screen where the
-  advertiser enters perks, features, and deal terms, connects a mock wallet,
-  and deposits a simulated SOL campaign budget before returning to the
-  advertiser workspace.
+- Mock business access offers Sign in and Sign up. Sign in opens the seeded
+  Magnolia profile directly; Sign up keeps the onboarding choice and
+  create-campaign flow. The advertiser enters perks, features, and deal terms,
+  connects a mock wallet, and deposits a simulated SOL campaign budget.
+  Created campaigns are saved in browser localStorage, shown as a live preview
+  beside the form fields, and may be deleted from My Campaigns. View campaigns
+  opens Camora’s host inbox with tabs for incoming partnership requests and
+  hosted campaigns; selecting one opens the host approve/verify console from
+  the guided demo.
+  The signed-in advertiser workspace is presented as a business profile with
+  Overview, My Campaigns, Redemptions, and Profile tabs. Overview hosts
+  Magnolia’s guided campaign management (wallet, simulated budget, Camora deal,
+  TSRE mock partner, redemption actions); My Campaigns lists locally created
+  campaigns.
+- A separate customer offers page lists partnership perks for customers. It
+  always includes the seeded Magnolia × Camora demo offer and also shows
+  locally saved advertiser campaigns that include a desired host partner.
+  Opening a card enters the customer reward-pass flow: Magnolia × Camora uses
+  the shared preview claim state (host verifies visits), while other offers
+  use local mock visit logging and redemption.
 - It rehearses the same ordered happy path and budget change as the final demo,
   while TSRE Gym remains a presentation-only proposed deal.
 - The production demo still requires server-authoritative state, real cross-tab

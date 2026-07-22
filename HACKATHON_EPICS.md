@@ -306,9 +306,24 @@ Prototype boundaries:
   `redeemed`, payout `paid`, and 0.045 SOL remaining.
 - Label every wallet, signature, funding, payout, and receipt interaction as
   mock. Do not fabricate or link to Solana Explorer transactions.
-- Allow a mock business sign-in → create-campaign path that collects perks,
-  features, and deal fields, connects a mock wallet, and deposits a simulated
-  SOL budget before returning to the advertiser workspace.
+- Offer mock Sign in and Sign up paths. Sign in opens the seeded Magnolia
+  profile directly; Sign up keeps the onboarding choice and create-campaign
+  flow that collects perks, features, and deal fields, connects a mock wallet,
+  and deposits a simulated SOL budget. View campaigns opens the Camora host
+  inbox with tabs for partnership requests sent to Camora and every campaign
+  currently hosted there. Selecting a campaign opens the host approve/verify
+  flow.
+- Present the signed-in prototype advertiser workspace as a business profile
+  with Overview, My Campaigns, Redemptions, and Profile tabs. Overview hosts
+  Magnolia’s guided campaign management (wallet, budget, Camora deal, TSRE
+  mock partner, redemption actions). Surface the required campaign budget,
+  partner deal, wallet, and redemption concepts without changing canonical
+  server-owned demo state. Local campaigns may be deleted from My Campaigns.
+- Add a customer offers page that surfaces partnership perks, including the
+  seeded Magnolia × Camora path and any locally saved advertiser campaigns
+  that include a desired host partner. Opening an offer card enters the
+  customer reward-pass flow (shared preview state for Magnolia × Camora;
+  local mock visit/redemption for other offers).
 - Keep the TSRE Gym proposed card visible, but do not add a TSRE E2E flow.
 - Treat this route as rehearsal UI only. It does not satisfy LL-102 or LL-105
   acceptance criteria and must not be reused as a client-side authoritative

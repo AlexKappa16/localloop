@@ -31,9 +31,11 @@ Keep demo persona switcher ≠ business workspace switcher.
 
 ## Copy & design
 
-Georgian-first UI; `lang="ka"`; load Noto Sans Georgian.  
-Default: neobrutalism (deep green, paper off-white, coral/yellow). Creative
-styles only when explicitly requested.
+English UI; `lang="en"`; centralize finished UI terms in `src/copy/en.ts`.
+Visual direction is open: industrial/editorial/newspaper and neobrutalist cues
+are options, not mandates. No required green palette, paper background, hard
+shadows, or font stack. Keep the system coherent and tokenized; preserve mobile
+responsiveness, readable contrast, visible focus/states, and ≥44px targets.
 
 ## Solana safety
 
